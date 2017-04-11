@@ -1,0 +1,131 @@
+.tree-component {
+  position: relative;
+  min-height: 45px; }
+
+.tree-subject {
+  position: relative;
+  border-bottom: 1px solid #dfdfdf;
+  background: #fff;
+  padding: 0 0 0 14px;
+  cursor: move;
+  /**
+   * Block title
+   */
+  /**
+   * Group of actions buttons (edit, duplicate, remove, etc.)
+   */ }
+  .tree-subject:hover {
+    background: #f5f5f5; }
+  .tree-subject > h3 {
+    height: 45px;
+    margin: 0;
+    padding: 14px 10px 14px 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: bold; }
+  .tree-subject > .btn-group-actions {
+    display: none;
+    margin: 10px 0 0 0; }
+  .tree-subject:hover > .btn-group-actions {
+    display: block; }
+
+/**
+ *
+ */
+.tree-action {
+  background: transparent;
+  cursor: pointer; }
+  .tree-action > .btn-expand {
+    color: #999;
+    float: left;
+    background: transparent; }
+  .tree-action:hover > .btn-expand {
+    color: #666; }
+  .tree-action > h3 {
+    padding-left: 0;
+    font-weight: normal;
+    color: #999; }
+  .tree-action:hover > h3 {
+    color: #666; }
+
+ol,
+li {
+  padding: 0;
+  margin: 0;
+  list-style: none; }
+
+/**
+ * Style the dragged element while is being dragged
+ */
+/**
+ * Hide the dragging source
+ */
+.dndDraggingSource {
+  display: none; }
+
+/**
+ * A border that's get colored during dnd
+ * (for plugin `angular-drag-and-drop-lists`)
+ */
+[dnd-list] {
+  border-left: 5px solid transparent; }
+
+/**
+ * Make everything during the dragging more smooth,
+ * less flickering in the UI
+ * (for plugin `angular-drag-and-drop-lists`)
+ */
+[dnd-list],
+.customize-subject {
+  transition: all .18s ease; }
+
+/**
+ * Style the dnd experience when dragging
+ * (for plugin `angular-drag-and-drop-lists`)
+ */
+.dndDragover {
+  /**
+   * Highlight the container when `drag-hovered`
+   */
+  /**
+   * and highlight also the container's component label when `drag-hovered`
+   */ }
+  .dndDragover[dnd-list] {
+    padding: 0 0 42px 0;
+    border-left: 5px solid #1ec71e; }
+  .dndDragover > li > .customize-subject {
+    background-color: #7aeb7a; }
+
+/**
+ * Dragged component placeholder
+ * (for plugin `angular-drag-and-drop-lists`)
+ */
+.dndPlaceholder {
+  background-color: #638263;
+  min-height: 42px;
+  display: block;
+  position: relative;
+  margin-left: 35px; }
+  .tree-section .dndPlaceholder {
+    margin-left: 30px; }
+
+/**
+ * The tree root list
+ */
+.tree {
+  margin: 0;
+  background: #eee;
+  border-top: 1px solid #ccc; }
+  .tree > .dndPlaceholder {
+    margin-left: 5px; }
+
+/**
+ * Manage the indentation of the tree
+ */
+.tree-basket .tree-box,
+.tree-box .tree-fruit {
+  margin-left: 30px; }
+
+/*# sourceMappingURL=style.css.map */

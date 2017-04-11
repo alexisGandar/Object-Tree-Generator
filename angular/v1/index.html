@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <link data-require="bootstrap-css@*" data-semver="3.3.1" rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script data-require="angular.js@*" data-semver="1.3.15" src="https://code.angularjs.org/1.3.15/angular.js"></script>
+    <script data-require="angular-ui-bootstrap@*" data-semver="0.12.0" src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.12.0.min.js"></script>
+    <script src="https://rawgit.com/marceljuenemann/angular-drag-and-drop-lists/master/angular-drag-and-drop-lists.js"></script>
+    <script src="script.js"></script>
+    <script src="models.js"></script>
+    <script src="utils.js"></script>
+  </head>
+
+  <body ng-app="dndTreeTest">
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Tree</h1>
+        <h2>Using <a href="https://github.com/marceljuenemann/angular-drag-and-drop-lists">angular-drag-drop-list</a></h2>
+        <p>Baskets and boxes can stay in the root level of the tree, basket can contain only boxes, boxes can contain only fruits.</p>
+        <small>Example by <a href="https://kuus.github.io">kuus</a></small>
+      </div>
+    </div>
+    <div class="container" ng-controller="TreeCtrl">
+      <div class="row">
+        <div class="col-sm-6">
+          <h4>Build the tree</h4>
+          <ol class="tree" dnd-list="tree" dnd-allowed-types="['basket','box']" dnd-drop="helperDnd.drop(event, index, item, tree)">
+            <li ng-repeat="model in tree" dnd-draggable="model" dnd-type="model.subject" dnd-effect-allowed="copyMove" dnd-dragstart="helperDnd.dragstart(model, tree, $index)" dnd-moved="helperDnd.moved(model, tree, $index)" dnd-copied="duplicate(model, tree, $index)" class="tree-component" ng-include="'tree-' + model.subject + '.html'"></li>
+          </ol>
+          <script type="text/ng-template" id="tree-basket.html">
+            <ol class="tree-basket"
+              ng-init="boxes=model.boxes"
+              dnd-list="boxes"
+              dnd-allowed-types="['box']"
+              dnd-drop="helperDnd.drop(event, index-1, item, boxes)"
+              dnd-dragover="helperDnd.dragover(event, index)">
+              <li ng-include="'tree-component-header.html'" ng-init="list=tree"></li>
+              <li ng-repeat="model in boxes"
+                dnd-draggable="model"
+                dnd-type="'box'"
+                dnd-effect-allowed="copyMove"
+                dnd-dragstart="helperDnd.dragstart(model, boxes, $index)"
+                dnd-moved="helperDnd.moved(model, boxes, $index)"
+                dnd-copied="duplicate(model, boxes, $index)"
+                class="tree-component"
+                ng-include="'tree-box.html'">
+              </li>
+            </ol>
+          </script>
+          <script type="text/ng-template" id="tree-box.html">
+            <ol class="tree-box"
+              ng-init="fruits=model.fruits"
+              dnd-list="fruits"
+              dnd-allowed-types="['fruit']"
+              dnd-drop="helperDnd.drop(event, index-1, item, fruits)"
+              dnd-dragover="helperDnd.dragover(event, index)">
+              <li ng-include="'tree-component-header.html'" ng-init="list=boxes||tree"></li>
+              <li ng-repeat="model in fruits"
+                dnd-draggable="model"
+                dnd-type="'fruit'"
+                dnd-effect-allowed="copyMove"
+                dnd-dragstart="helperDnd.dragstart(model, fruits, $index)"
+                dnd-moved="helperDnd.moved(model, fruits, $index)"
+                dnd-copied="duplicate(model, fruits, $index)"
+                class="tree-component"
+                ng-include="'tree-fruit.html'">
+              </li>
+            </ol>
+          </script>
+          <script type="text/ng-template" id="tree-fruit.html">
+            <div class="tree-fruit">
+              <div ng-include="'tree-component-header.html'" ng-init="list=fruits"></div>
+            </div>
+          </script>
+          <script type="text/ng-template" id="tree-component-header.html">
+            <div class="tree-subject tree-subject-{{model.subject}}">
+              <div class="pull-right btn-group btn-group-actions">
+                <a class="btn btn-xs glyphicon glyphicon-plus" ng-click="newChild(model,'fruit')" ng-if="model.subject!=='fruit'" tooltip="{{ model.subject==='basket' ? 'Add box' : 'Add box'}}"></a>
+                <a class="btn btn-xs glyphicon glyphicon-plus" ng-click="newChild(model,'box')" ng-if="model.subject!=='fruit'" tooltip="{{ model.subject==='basket' ? 'Add fruit' : 'Add fruit'}}"></a>
+                <a class="btn btn-xs text-danger glyphicon glyphicon-remove" ng-if="model.subject!=='basket'" ng-click="removeMe(this, model, list)" tooltip="Remove"></a>
+              </div>
+              <h3>
+                <span class="text-success" ng-switch="model.subject">
+                  <i ng-switch-when="basket" class="glyphicon glyphicon-trash"></i>
+                  <i ng-switch-when="box" class="glyphicon glyphicon-inbox"></i>
+                  <i ng-switch-when="fruit" class="glyphicon glyphicon-tags"></i>
+                </span>&nbsp;
+                {{model.subject|uppercase}}: <small>{{model.id}}</small>
+              </h3>
+            </div>
+          </script>
+          <ol class="tree">
+            <li class="tree-component" ng-click="addBasket()">
+              <div class="tree-subject tree-action">
+                <h3>Add basket</h3>
+              </div>
+            </li>
+            <li class="tree-component" ng-click="addBox()">
+              <div class="tree-subject tree-action">
+                <h3>Add box</h3>
+              </div>
+            </li>
+          </ol>
+        </div>
+        <div class="col-sm-6">
+          <h4>Tree model to json</h4>
+          <pre class="pre-scrollable">{{ tree|json }}</pre>
+        </div>
+      </div>
+    </div>
+  </body>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebUi for Object Tree Generation</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+        <meta name="author" content="Yawen Daba" />
+		<link rel="stylesheet" href="dist/themes/default/style.min.css" />
+		<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="js/app.js"></script>
+		<script src="dist/jstree.min.js"></script>
+    </head>
+    <body>
+        <div id="tree">
+			<ul>
+				<li class='node' id='root' >Root node 
+					<ul>
+						<li class='node' id='1'>Child node 
+							<ul>
+								<li class='item' id='5'>item </li>
+							</ul>
+						</li>
+						<li class='node' id='2'>Child node </li>
+						<li class='item' id='3'>item </li>
+						<li class='item' id='4'>item </li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+		
+		<button id="addN">Add Node</button><button id="addI">Add Item</button><button id="del">Delete</button>
+    </body>
+</html>
