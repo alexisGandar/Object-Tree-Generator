@@ -1,3 +1,11 @@
-lybrairies used : 
-jquery
-jsTree
+lybrairies used or study: 
+
+For the tree:
+	jquery : - jstree (work but not esthetic and you cannot save the tree or I can't find how)
+      		 - bootstrap-treeview (the one that work better)
+	
+	angularJs : - angular-drag-drop-list (Cannot collapse the object and I have some problem to display all the tree)
+	   	    - angular-ui-tree (I can't make it work)
+
+For the table: 
+	- bootstrap table
