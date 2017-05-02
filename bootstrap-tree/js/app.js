@@ -638,7 +638,7 @@ app.modules.convert = (function(){
 		var tree = app.modules.tree.getTree();
 		sessionStorage.id = id;
 		sessionStorage.tree = JSON.stringify(tree);
-		sessionStorage.load = false;
+		sessionStorage.load = 1;
 		var link = document.createElement("a");
 		link.href = "view/step2.html";
 		link.click();

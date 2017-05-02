@@ -7,8 +7,10 @@ app.modules.target = (function(){
   var test_tree;
 	var data_tree;
   var newId = 0;
+	var data_selected;
+	var test_selected;
+	var links = [];
 	return{
-
     addValue : function(t){
       if(t != null){
         t.forEach(function(e) {
@@ -73,7 +75,7 @@ app.modules.target = (function(){
               test_tree.push(newNode);
               app.modules.target.generate(res,test_tree[0]);
 							sessionStorage.id = newId;
-							sessionStorage.load = true;
+							sessionStorage.load = 0;
 							sessionStorage.tree = JSON.stringify(test_tree);
               $('#tree').treeview({data: test_tree});
             };
@@ -366,6 +368,12 @@ app.modules.target = (function(){
               data_tree.push(newNode);
 							app.modules.target.data(res,data_tree[0]);
               $('#dataTree').treeview({data: data_tree});
+							$('#dataTree').on('nodeCollapsed', function(event, data) {
+								app.modules.target.reload();
+							});
+							$('#dataTree').on('nodeExpanded', function(event, data) {
+								app.modules.target.reload();
+							});
             };
           })(f);
 
@@ -530,14 +538,89 @@ app.modules.target = (function(){
 			};
 		},
 
-		link : function(){
-			console.log("work!");
-			//var e = $(this);
-			//console.log(e);
+		contain : function(tree,id){
+			var find = false;
+			var i = 0;
+			while((!find)&&(i<tree.length)){
+				if(tree[i].id == id){
+					find = true
+				}else{
+					if(tree[i].nodes != undefined){
+						find = app.modules.target.contain(tree[i].nodes,id);
+					}
+				}
+				i++;
+			}
+			return find;
 		},
 
-		listener : function(){
-			$('.link').click(app.modules.target.link);
+		link : function(id){
+			if(app.modules.target.contain(test_tree,id)){
+				if(test_selected == id){
+					console.log("unselected");
+					app.modules.target.changeColor(id,"selected","round");
+					test_selected = undefined;
+				}else {
+					console.log("selected");
+					test_selected = id;
+					$("#"+id).attr("class", "selected");
+					app.modules.target.changeColor(3,"round","selected");
+					if(data_selected != undefined){
+          	var obj = {
+							test : test_selected,
+							data : data_selected
+						}
+						app.modules.target.changeColor(test_selected,"selected","round");
+						app.modules.target.changeColor(data_selected,"selected","round");
+						test_selected = undefined;
+						data_selected = undefined;
+						app.modules.target.addLink(obj);
+					}
+				}
+			}else{
+				if(data_selected == id){
+					console.log("unselected");
+					app.modules.target.changeColor(id,"selected","round");
+					data_selected = undefined;
+				}else {
+					console.log("selected");
+					data_selected = id;
+					app.modules.target.changeColor(id,"round","selected");
+					if(test_selected != undefined){
+						var obj = {
+							test : test_selected,
+							data : data_selected
+						}
+						app.modules.target.changeColor(test_selected,"selected","round");
+						app.modules.target.changeColor(data_selected,"selected","round");
+						test_selected = undefined;
+						data_selected = undefined;
+						app.modules.target.addLink(obj);
+					}
+				}
+			}
+		},
+
+		changeColor : function(id,old,n){
+			$("#"+id).removeClass( old ).addClass( n );
+			console.log($("#"+id));
+		},
+
+		addLink : function(obj){
+			var add = true;
+			links.forEach(function(e){
+				if((e.data == obj.data)&&(e.test == obj.test)){
+					add = false;
+				}
+			});
+			if(add){
+				links.push(obj);
+				app.modules.target.reload();
+			}
+		},
+
+		reload : function(){
+			console.log(links);
 		},
 
     test : function(){
@@ -549,20 +632,20 @@ app.modules.target = (function(){
       if(sessionStorage.getItem('tree') != undefined){
         test_tree = JSON.parse(sessionStorage.getItem('tree'));
       }
-			if(sessionStorage.load == false){
+			if(sessionStorage.load == 1){
 				app.modules.target.addValue(test_tree);
 			}
-			$('.link').click(app.modules.target.link);
       $('#tree').treeview({data: test_tree});
       document.getElementById('import').addEventListener('change', app.modules.target.import, false);
 			document.getElementById('json').addEventListener('change', app.modules.target.json, false);
-			$('#tree').on('nodeExpanded', function(event, data) {
-  			app.modules.target.listener();
+			$('#tree').on('nodeCollapsed', function(event, data) {
+				app.modules.target.reload();
 			});
-			$('#dataTree').on('nodeExpanded', function(event, data) {
-  			app.modules.target.listener();
+			$('#tree').on('nodeExpanded', function(event, data) {
+				app.modules.target.reload();
 			});
     }
+
   }
 })();
 
@@ -570,9 +653,3 @@ app.modules.target = (function(){
 $(document).ready(function () {
   app.modules.target.init();
 });
-
-function lien(){
-	console.log("work!");
-	//var e = $(this);
-	//console.log(e);
-}

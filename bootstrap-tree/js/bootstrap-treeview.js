@@ -522,7 +522,7 @@
 				.attr('style', _this.buildStyleOverride(node));
 
 			if(node.type == "value"){
-				var button = "<button onclick='location.href='http://www.example.com' class='btn btn-default link' id='"+node.id+"'>link</button>";
+				var button = "<div onclick='app.modules.target.link(this.id)' class='round' id='"+node.id+"'></div>";
 				treeItem.append(button);
 			}
 

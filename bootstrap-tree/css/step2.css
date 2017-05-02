@@ -9,3 +9,36 @@
   height: 100%;
   width: 30%
 }
+
+.round{
+  color: black;
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 2px 2px 2px 2px;
+  background-color: white;
+}
+
+.hover{
+  color: black;
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 2px 2px 2px 2px;
+  background-color: yellow;
+}
+
+.selected{
+  color: black;
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-width: 2px 2px 2px 2px;
+  background-color: black;
+}
