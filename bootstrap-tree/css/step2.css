@@ -1,0 +1,11 @@
+.data{
+  float: left;
+  height: 100%;
+  width: 30%
+}
+
+.treeObj{
+  float: right;
+  height: 100%;
+  width: 30%
+}

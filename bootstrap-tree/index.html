@@ -10,13 +10,15 @@
     <!-- <link href="css/style.css" rel="stylesheet"> -->
     <!-- Bootstrap -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-	  <link href="" rel="stylesheet">
+	  <link href="css/style.css" rel="stylesheet">
 	  <link href="css/bootstrap-treeview.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 
 
   </head>
   <body>
+    <div id="fond"></div>
+    <div id="modal" class="popup"></div>
     <div class="treeObj">
       <h2>Object Tree</h2>
 		  <div id="tree"></div>
@@ -45,11 +47,11 @@
       <div id="subTree">
 
       </div>
-      <button class="btn custom btn-default" id="addTerm">Add term</button><button class="btn custom btn-default" id="check">Check all</button><button class="btn custom btn-default" id="unCheck">Uncheck all</button><button class="btn custom btn-default" id="addI">Cancel</button>
+      <button class="btn custom btn-default" id="addTerm">Add term</button><button class="btn custom btn-default" id="check">Check all</button><button class="btn custom btn-default" id="unCheck">Uncheck all</button>
     </div>
 
     <div class="odf">
-
+        <button class="btn custom btn-default" id="convert">O-DF</button>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

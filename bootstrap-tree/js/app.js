@@ -4,7 +4,7 @@ var app = {
 
 app.modules.tree = (function(){
 	var test_tree;
-	var newId = 9;
+	var newId = 8;
 	return {
 
 		add : function(new_tree){
@@ -12,6 +12,9 @@ app.modules.tree = (function(){
 			var x = $('#tree').treeview('getSelected');
 			y = x[0];
 			if(y.type != "item"){
+				if(y.type != "root"){
+					new_tree[0].property = "";
+				}
 				app.modules.tree.changeId(new_tree);
 				app.modules.tree.recursiveAdd(test_tree,y.id,new_tree[0]);
 				$('#tree').treeview('selectNode', [ y.nodeId, { silent: true } ]);
@@ -164,12 +167,15 @@ app.modules.tree = (function(){
 			console.log(liste[0]);
 		},
 
+		getTree : function(){
+			return test_tree;
+		},
+
+		getId : function(){
+			return newId;
+		},
+
 		init : function(){
-			//var buttonAddO = " <button type='button' data-toggle='tooltip' data-placement='top' title='Add a node' id='btnAddNode'  class='btn btn-xs custom glyphicon glyphicon-apple' onclick='app.modules.tree.del()'></button>";
-			//var buttonAddI = " <button type='button' data-toggle='tooltip' data-placement='top' title='Add a item' id='btnAddItem'  class='btn btn-xs custom glyphicon glyphicon glyphicon-tags' onclick='app.modules.tree.test()'></button>";
-			//var buttonDel = " <button type='button' data-toggle='tooltip' data-placement='top' title='Delete' id='btnDel'  class='btn btn-xs custom glyphicon glyphicon-minus' onclick='app.modules.tree.del()'></button>";
-
-
 
 			test_tree = [
 			{
@@ -178,42 +184,57 @@ app.modules.tree = (function(){
 				id: "0",
 				nodes: [
 				{
-					text: "Node",
+					text: "Person",
 					type: "node",
+					typeof : "Person",
 					id: "1",
 					nodes: [
 					{
-						text: "Node",
-						type: "node",
+						text: "http://something/youKnow/name",
+						type: "item",
+						name: "name",
+						property: "http://something/youKnow/name",
 						id: "2"
 					},
 					{
-						text: "Item",
+						text: "http://something/youKnow/age",
 						type: "item",
+						name: "age",
+						property: "http://something/youKnow/age",
 						id: "3"
-					}
+					},
+					{
+						text: "Adress",
+						type: "node",
+						typeof: "Adress",
+						property: "",
+						id: "5",
+						nodes: [
+							{
+								text: "http://something/youKnow/street",
+								type: "item",
+								name: "street",
+								property: "http://something/youKnow/street",
+								id: "6"
+							},
+							{
+								text: "http://something/youKnow/number",
+								type: "item",
+								name: "number",
+								property: "http://something/youKnow/number",
+								id: "7"
+							},
+						]
+					},
 					]
 				},
 				{
-					text: "Node",
-					type: "node",
-					id: "5"
-				},
-				{
-					text: "Node",
-					type: "node",
-					id: "6"
-				},
-				{
-					text: "Item",
+					text: "http://something/youKnow/health",
 					type: "item",
-					id: "7"
+					name: "health",
+					property: "http://something/youKnow/health",
+					id: "4"
 				},
-				{
-					text: "Item",
-					type: "item",
-					id: "8"
-				}
 				]
 			},
 			];
@@ -253,11 +274,15 @@ app.modules.term = (function(){
 		},
 
 		check : function(){
-			$('#subTree').treeview('checkAll', { silent: true });
+			if(test_tree != undefined){
+				$('#subTree').treeview('checkAll', { silent: true });
+			}
 		},
 
 		unCheck : function(){
-			$('#subTree').treeview('uncheckAll', { silent: true });
+			if(test_tree != undefined){
+				$('#subTree').treeview('uncheckAll', { silent: true });
+			}
 		},
 
 		add : function(){
@@ -265,14 +290,18 @@ app.modules.term = (function(){
 			if((x[0] == undefined) || (x[0].type == "item")){
 				alert("Please select a valid node");
 			}else{
-				app.modules.term.recursiveAdd(test_tree);
-				liste_del.forEach(function(e){
-					app.modules.term.recursiveDel(test_tree,e);
-				});
-				liste_del = [];
-				app.modules.tree.add(test_tree);
-				test_tree = undefined;
-				$('#subTree').treeview('remove');
+				if($('#subTree').treeview('getChecked').length != 0 ){
+					app.modules.term.recursiveAdd(test_tree);
+					liste_del.forEach(function(e){
+						app.modules.term.recursiveDel(test_tree,e);
+					});
+					liste_del = [];
+					app.modules.tree.add(test_tree);
+					test_tree = undefined;
+					$('#subTree').treeview('remove');
+				}else{
+					alert("Check a term to add");
+				}
 			}
 		},
 
@@ -282,7 +311,6 @@ app.modules.term = (function(){
 			while((!done) && (i < t.length)){
 				var x = t[i];
 				if(x.id == id){
-					console.log("del");
 					t.splice(i,1);
 					return true;
 				}else{
@@ -297,6 +325,52 @@ app.modules.term = (function(){
 			return false;
 		},
 
+		generate : function(tab,term){
+			$('#subTree').treeview('remove');;
+			test_tree = [];
+			var t;
+			var root;
+			if((tab[0]==undefined) || (tab[0] == null)){
+				t = "item";
+				var res = term.split(":");
+				root = {
+					text: term,
+					name: res[1],
+					property: term,
+					type: t,
+					id: "0",
+				}
+			}else{
+				t = "node";
+				root = {
+					text: term,
+					type: t,
+					id: "0",
+					typeof: term,
+					nodes: []
+				}
+			}
+
+			test_tree.push(root);
+			if(t == "node"){
+				var i = 0;
+				while((i<5) && (i<tab.length)){
+					var res = tab[i].property.value.split("/");
+					var item = {
+						text: tab[i].property.value,
+						type: "item",
+						name: res[res.length-1],
+						property: tab[i].property.value,
+						id: i+1,
+					}
+					test_tree[0].nodes.unshift(item);
+					i++;
+				}
+			}
+
+			$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
+
+		},
 
 		recursiveAdd : function(tab){
 			var liste = $('#subTree').treeview('getChecked');
@@ -321,53 +395,23 @@ app.modules.term = (function(){
 		},
 
 		test : function(){
-			var liste = $('#tree').treeview('getSelected');
+			var liste = $('#subTree').treeview('getSelected');
 			console.log(test_tree);
 		},
 
 
 		init : function(){
-			test_tree = [
-				{
-					text: "Node",
-					type: "node",
-					id: "0",
-					nodes: [
-						{
-							text: "Node",
-							type: "node",
-							id: "1",
-							nodes: [
-								{
-									text: "Item",
-									type: "item",
-									id: "2"
-								},
-								{
-									text: "Item",
-									type: "item",
-									id: "3"
-								},
-							]
-						},
-						{
-							text: "Item",
-							type: "item",
-							id: "4"
-						}
-					]
-				},
-			];
-			$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
+
+			$('#subTree').on('nodeChecked', function(event, data) {
+				app.modules.term.checkParent(data);
+			});
+			$('#subTree').on('nodeUnchecked', function(event, data) {
+  				app.modules.term.unCheckChild(data);
+			});
+
 			$("#addTerm").click(app.modules.term.add);
 			$("#check").click(app.modules.term.check);
 			$("#unCheck").click(app.modules.term.unCheck);
-			$('#subTree').on('nodeChecked', function(event, data) {
-  			app.modules.term.checkParent(data);
-			});
-			$('#subTree').on('nodeUnchecked', function(event, data) {
-  			app.modules.term.unCheckChild(data);
-			});
 		}
 	}
 })();
@@ -375,7 +419,48 @@ app.modules.term = (function(){
 
 app.modules.table = (function(){
 	var data;
+	var tab = [];
 	return{
+
+		select : function(term){
+			var termUrl;
+			var done = false;
+			var i = 0;
+			while(!done){
+				if(tab.results[i].prefixedName[0] == term){
+					termUrl = tab.results[i].uri[0];
+					done = true;
+				}
+				i++;
+			}
+
+			var query = 'PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>'
+									+'PREFIX  dc:     <http://purl.org/dc/elements/1.1/>'
+									+'PREFIX  :       <.>'
+									+'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+
+									+'SELECT *'
+									+'{'
+    							+'GRAPH ?g { {'
+  								+'?property rdfs:domain ?class . '
+  								+'<'+termUrl+'> rdfs:subClassOf+ ?class.'
+									+'} UNION {'
+  								+'?property rdfs:domain <'+termUrl+'>.'
+									+'}}'
+									+'}';
+
+			var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
+
+			var pr = $.ajax({
+				url : uri,
+				type: "GET",
+				dataType: "json",
+				success :
+					function(res){
+						app.modules.term.generate(res.results.bindings,term);
+					}
+			});
+		},
 
 		search : function(){
 			var param = $('#inputTerm').val();
@@ -386,6 +471,8 @@ app.modules.table = (function(){
 				dataType: "json",
 				success :
 					function(res){
+						tab = res;
+						console.log(tab);
 						$('#table').bootstrapTable('destroy');
 						$('#table').bootstrapTable({
 								data: res.results
@@ -397,11 +484,168 @@ app.modules.table = (function(){
 		init : function(){
 
 			$('#table').on('click', 'tbody tr', function(event) {
-				var x = $(this).children()[0];
+				var x = $(this).children()[0].innerHTML;
 				console.log(x);
+				app.modules.table.select(x);
 			});
 
 			$('#submitTerm').click(app.modules.table.search);
+		}
+	}
+
+})();
+
+app.modules.convert = (function(){
+	var id = 0;
+	return{
+
+		conv : function(){
+			var tree = app.modules.tree.getTree();
+			var s = app.modules.convert.recursiveConv(tree,0,"");
+			console.log(s);
+			app.modules.convert.showModal(s);
+			id = 0;
+		},
+
+		recursiveConv : function(t,lvl,s){
+			t.forEach(function(e){
+				if(lvl == 0){
+					s = s + '<?xml version="1.0"?>' + "\n";
+					s = s + '<objects xmlns="odf.xsd">'+ "\n";
+					s = app.modules.convert.recursiveConv(e.nodes,1,s);
+					s = s + "</objects>";
+				}else{
+					if((e.type == "node")&&(e.nodes == undefined)){
+						console.log('lol');
+						var res = e.typeof.split(":");
+						e.name = res[1];
+						e.property = e.typeof;
+					}
+					if(e.nodes != undefined){
+						if(lvl == 1){
+							s = s + '\t<object typeof ="'+e.typeof+'">' + "\n";
+						}else{
+							var i = 0;
+							while(i<lvl){
+								i++;
+								s = s + "\t";
+							}
+							s = s + '<object typeof ="'+e.typeof+'" property="'+e.property+'">' + "\n";
+						}
+						var i = 0;
+						while(i<lvl){
+							i++;
+							s = s + "\t";
+						}
+						s = s +'\t<id>'+e.typeof+id+'</id>'  + "\n";
+						id++;
+						s = app.modules.convert.recursiveConv(e.nodes,lvl+1,s);
+						i = 0;
+						while(i<lvl){
+							i++;
+							s = s + "\t";
+						}
+						s = s + "</object>" + "\n";
+					}else{
+						var i = 0;
+						while(i<lvl){
+							i++;
+							s = s + "\t";
+						}
+						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'">' + "\n";
+					}
+				}
+			});
+			return s;
+		},
+
+		 showModal : function(s){
+		   var id = '#modal';
+		   $(id).html('<textarea id="xmlVersion" wrap="off">'+s+'</textarea><button class="btn custom btn-default" id="dl">download</button><button class="btn custom btn-default"  id="step2">step2</button><button class="btn custom btn-default" id="cancel">cancel</button>');
+
+		   // On definit la taille de la fenetre modale
+		   app.modules.convert.resizeModal();
+
+		   // Effet de transition
+		   $('#fond').fadeIn(1000);
+		   $('#fond').fadeTo("slow",0.8);
+		   // Effet de transition
+		   $(id).fadeIn(2000);
+
+		   $('.popup .close').click(function (e) {
+		      // On désactive le comportement du lien
+		      e.preventDefault();
+		      // On cache la fenetre modale
+		      app.modules.convert.hideModal();
+		    });
+				$('#step2').click(app.modules.convert.step2);
+				$('#cancel').click(app.modules.convert.hideModal);
+				$('#dl').click(app.modules.convert.saveTextAsFile);
+		},
+
+		hideModal : function(){
+		   // On cache le fond et la fenêtre modale
+		   $('#fond, .popup').hide();
+		   $('.popup').html('');
+		},
+
+		resizeModal : function(){
+		   var modal = $('#modal');
+		   // On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+		   var winH = $(document).height();
+		   var winW = $(window).width();
+
+		   // le fond aura la taille de l'écran
+		   $('#fond').css({'width':winW,'height':winH});
+
+		   // On récupère la hauteur et la largeur de l'écran
+		   var winH = $(window).height();
+		   // On met la fenêtre modale au centre de l'écran
+		   modal.css('top', winH/2 - modal.height()/2);
+		   modal.css('left', winW/2 - modal.width()/2);
+		},
+
+		saveTextAsFile : function(){
+			console.log('grgqegqre');
+    	var textToWrite = $(xmlVersion).val();
+    	var textFileAsBlob = new Blob([textToWrite], {type:'text/xml'});
+    	var fileNameToSaveAs = "Tree";
+
+    	var downloadLink = document.createElement("a");
+    	downloadLink.download = fileNameToSaveAs;
+    	downloadLink.innerHTML = "Download File";
+    	if (window.webkitURL != null)
+    	{
+        	// Chrome allows the link to be clicked
+        	// without actually adding it to the DOM.
+        	downloadLink.href = window.webkitURL.createObjectURL(textFileAsBlob);
+    	}
+    	else
+    	{
+        	// Firefox requires the link to be added to the DOM
+        	// before it can be clicked.
+        	downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+        	downloadLink.onclick = destroyClickedElement;
+        	downloadLink.style.display = "none";
+        	document.body.appendChild(downloadLink);
+    	}
+
+    	downloadLink.click();
+	},
+
+	step2 : function(){
+		var id = app.modules.tree.getId();
+		var tree = app.modules.tree.getTree();
+		sessionStorage.id = id;
+		sessionStorage.tree = JSON.stringify(tree);
+		sessionStorage.load = false;
+		var link = document.createElement("a");
+		link.href = "view/step2.html";
+		link.click();
+	},
+
+		init : function(){
+			$('#convert').click(app.modules.convert.conv);
 		}
 	}
 
@@ -412,4 +656,11 @@ $(document).ready(function () {
 	app.modules.table.init();
   app.modules.tree.init();
 	app.modules.term.init();
+	app.modules.convert.init();
+	$('#fond').click(function () {
+		 app.modules.convert.hideModal();
+	});
+	$(window).resize(function () {
+    app.modules.convert.resizeModal()
+	});
 });
