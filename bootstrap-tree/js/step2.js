@@ -564,7 +564,7 @@ app.modules.target = (function(){
 					console.log("selected");
 					test_selected = id;
 					$("#"+id).attr("class", "selected");
-					app.modules.target.changeColor(3,"round","selected");
+					app.modules.target.changeColor(id,"round","selected");
 					if(data_selected != undefined){
           	var obj = {
 							test : test_selected,
