@@ -10,6 +10,7 @@ app.modules.target = (function(){
 	var data_selected;
 	var test_selected;
 	var links = [];
+	var conn = [];
 	return{
     addValue : function(t){
       if(t != null){
@@ -561,6 +562,9 @@ app.modules.target = (function(){
 					app.modules.target.changeColor(id,"selected","round");
 					test_selected = undefined;
 				}else {
+					if(test_selected != undefined){
+						app.modules.target.changeColor(test_selected,"selected","round");
+					}
 					console.log("selected");
 					test_selected = id;
 					$("#"+id).attr("class", "selected");
@@ -583,6 +587,9 @@ app.modules.target = (function(){
 					app.modules.target.changeColor(id,"selected","round");
 					data_selected = undefined;
 				}else {
+					if(data_selected != undefined){
+						app.modules.target.changeColor(data_selected,"selected","round");
+					}
 					console.log("selected");
 					data_selected = id;
 					app.modules.target.changeColor(id,"round","selected");
@@ -614,6 +621,7 @@ app.modules.target = (function(){
 				}
 			});
 			if(add){
+				conn.push(obj.test);
 				links.push(obj);
 				app.modules.target.reload();
 			}
@@ -621,6 +629,22 @@ app.modules.target = (function(){
 
 		reload : function(){
 			console.log(links);
+			conn.forEach(function(e){
+				jsPlumb.detachAllConnections(e);
+			});
+
+			links.forEach(function(e){
+				$("#"+e.test).parent().attr('id',"p"+e.test);
+				$("#"+e.data).parent().attr('id',"p"+e.data);
+				jsPlumb.connect({
+          source: "p"+e.test,
+          target: "p"+e.data,
+					paintStyle:{ stroke:"black", strokeWidth:5 },
+					endpointStyle:{ stroke:"black" },
+					anchor:[[1, 0.5, 1, 0],[0,0.5,0,1]],
+					detachable: false,
+        });
+			});
 		},
 
     test : function(){
@@ -644,6 +668,21 @@ app.modules.target = (function(){
 			$('#tree').on('nodeExpanded', function(event, data) {
 				app.modules.target.reload();
 			});
+			jsPlumb.bind('click', function (connection, e) {
+				console.log("del");
+				var find = false;
+				var i = 0;
+				while((!find)&&(i<links.length)){
+					if(("p"+links[i].test == connection.sourceId)&&("p"+links[i].data == connection.targetId)){
+						find = true;
+						links.splice(i,1);
+						console.log(links);
+					}else{
+						i++;
+					}
+				}
+     		jsPlumb.detach(connection);
+ 			});
     }
 
   }

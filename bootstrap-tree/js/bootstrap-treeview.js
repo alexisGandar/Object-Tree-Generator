@@ -336,12 +336,12 @@
 		else {
 
 			if (node.selectable) {
-				this.toggleSelectedState(node, _default.options);
+				//this.toggleSelectedState(node, _default.options);
 			} else {
 				this.toggleExpandedState(node, _default.options);
 			}
 
-			this.render();
+			//this.render();
 		}
 	};
 
@@ -393,8 +393,9 @@
 	};
 
 	Tree.prototype.toggleSelectedState = function (node, options) {
-		if (!node) return;
-		this.setSelectedState(node, !node.state.selected, options);
+		//if (!node) return;
+		//this.setSelectedState(node, !node.state.selected, options);
+		return;
 	};
 
 	Tree.prototype.setSelectedState = function (node, state, options) {
@@ -808,11 +809,11 @@
 		@param {optional Object} options
 	*/
 	Tree.prototype.selectNode = function (identifiers, options) {
-		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
-			this.setSelectedState(node, true, options);
-		}, this));
+		//this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+		//	this.setSelectedState(node, true, options);
+		//}, this));
 
-		this.render();
+		//this.render();
 	};
 
 	/**
@@ -821,11 +822,11 @@
 		@param {optional Object} options
 	*/
 	Tree.prototype.unselectNode = function (identifiers, options) {
-		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
-			this.setSelectedState(node, false, options);
-		}, this));
+		//this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+		//	this.setSelectedState(node, false, options);
+		//}, this));
 
-		this.render();
+		//this.render();
 	};
 
 	/**
@@ -834,11 +835,11 @@
 		@param {optional Object} options
 	*/
 	Tree.prototype.toggleNodeSelected = function (identifiers, options) {
-		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
-			this.toggleSelectedState(node, options);
-		}, this));
+		//this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+		//	this.toggleSelectedState(node, options);
+		//}, this));
 
-		this.render();
+		//this.render();
 	};
 
 
