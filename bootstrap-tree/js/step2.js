@@ -661,7 +661,16 @@ app.modules.target = (function(){
 			});
 			if(add){
 				links.push(obj);
-				app.modules.target.reload();
+				$("#"+obj.test).parent().attr('id',"p"+obj.test);
+				$("#"+obj.data).parent().attr('id',"p"+obj.data);
+				jsPlumb.connect({
+			        source: "p"+obj.test, 
+			        target: "p"+obj.data,
+					paintStyle:{ stroke:"black", strokeWidth:5 },
+					endpointStyle:{ stroke:"black" },
+					anchor:["Left", "Right"],
+					detachable: false,
+			      });
 			}
 		},
 
@@ -719,9 +728,10 @@ app.modules.target = (function(){
 						i++;
 					}
 				}
-     		jsPlumb.detach(connection);
+				jsPlumb.detach(connection);
+				jsPlumb.recalculateOffsets($("ul"));
+				jsPlumb.repaintEverything();
  			});
-			jsPlumb.setContainer($("body"));
     }
 
   }
