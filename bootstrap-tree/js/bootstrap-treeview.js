@@ -534,23 +534,23 @@
 
 			// Add expand, collapse or empty spacer icons
 			var classList = [];
-			if (node.nodes) {
-				classList.push('expand-icon');
-				if (node.state.expanded) {
-					classList.push(_this.options.collapseIcon);
-				}
-				else {
-					classList.push(_this.options.expandIcon);
-				}
-			}
-			else {
-				classList.push(_this.options.emptyIcon);
-			}
-
-			treeItem
-				.append($(_this.template.icon)
-					.addClass(classList.join(' '))
-				);
+			// if (node.nodes) {
+			// 	classList.push('expand-icon');
+			// 	if (node.state.expanded) {
+			// 		classList.push(_this.options.collapseIcon);
+			// 	}
+			// 	else {
+			// 		classList.push(_this.options.expandIcon);
+			// 	}
+			// }
+			// else {
+			// 	classList.push(_this.options.emptyIcon);
+			// }
+			//
+			// treeItem
+			// 	.append($(_this.template.icon)
+			// 		.addClass(classList.join(' '))
+			// 	);
 
 
 			// Add node icon

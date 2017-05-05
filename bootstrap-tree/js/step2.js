@@ -10,14 +10,11 @@ app.modules.target = (function(){
 	var data_selected;
 	var test_selected;
 	var links = [];
-	var conn = [];
 	return{
     addValue : function(t){
       if(t != null){
         t.forEach(function(e) {
-          console.log(e);
           if(e.type == "root"){
-            console.log("sbloup");
             app.modules.target.addValue(e.nodes);
           }else{
             if(e.type == "node"){
@@ -356,7 +353,8 @@ app.modules.target = (function(){
             return function(e) {
               // Print the contents of the file
 							console.log(JSON.parse(e.target.result));
-							var res = e.target.result.slice(1,e.target.result.length);
+							var res = e.target.result;
+							res = e.target.result.slice(1,e.target.result.length);
 							console.log(res);
 							data_tree = [];
               var newNode = {
@@ -369,6 +367,7 @@ app.modules.target = (function(){
               data_tree.push(newNode);
 							app.modules.target.data(res,data_tree[0]);
               $('#dataTree').treeview({data: data_tree});
+							$('#dataTree').treeview('expandAll');
 							$('#dataTree').on('nodeCollapsed', function(event, data) {
 								app.modules.target.reload();
 							});
@@ -396,8 +395,9 @@ app.modules.target = (function(){
 			while(i<s.length){
 				switch(s[i]) {
 	    		case "{":
-						if(name != ""){
-							var newNode = {
+						var newNode;
+						if(last == ":"){
+							newNode = {
 								text: name,
 								typeof: name,
 								type: "Node",
@@ -408,8 +408,6 @@ app.modules.target = (function(){
 							newId++;
 							node[node.length-1].nodes.push(newNode);
 							node.push(newNode);
-						}
-						if(last == ":"){
 							newNode = {
 								text: "Object",
 								typeof: "Object",
@@ -468,34 +466,62 @@ app.modules.target = (function(){
 						}
 						switchNV = false;
 	        	break;
+					case "[" :
+						var newNode;
+						if(name == ""){
+							newNode = {
+								text: "Object",
+								typeof: "Array",
+								type: "array",
+								property: "",
+								id: newId,
+								nodes: []
+							};
+						}else {
+							newNode = {
+								text: name,
+								typeof: "Array",
+								type: "array",
+								property: "",
+								id: newId,
+								nodes: []
+							};
+						}
+						newId++;
+						node[node.length-1].nodes.push(newNode);
+						node.push(newNode);
+						name = "";
+						value = "";
+						switchNV = false;
+						break;
 					case "]" :
 						if(last == "["){
 							var newNode = {
-								text: name,
-								name: name,
-								type: "item",
-								property: name,
-								id: newId,
-								nodes: [
-									{
-										text: "empty",
-										type: "value",
-										value: value,
-										id: newId+1,
-									}
-								]
+								text: "empty",
+								type: "value",
+								value: value,
+								id: newId
 							};
-							newId++;
 							newId++;
 							node[node.length-1].nodes.push(newNode);
 							name = "";
 							value = "";
-						}else{
-							node.pop();
-							break;
 						}
+						if(name != ""){
+							var newNode = {
+								text: name,
+								type: "value",
+								value: name,
+								id: newId,
+							}
+							newId++;
+							node[node.length-1].nodes.push(newNode);
+							name = "";
+							value = "";
+						}
+						node.pop();
+						break;
 					case ",":
-						console.log(name);
 						if((name != "")&&(value != "")){
 							var newNode = {
 								text: name,
@@ -517,6 +543,19 @@ app.modules.target = (function(){
 							node[node.length-1].nodes.push(newNode);
 							name = "";
 							value = "";
+						}else{
+							if((name != "")&&(value == "")){
+								var newNode = {
+									text: name,
+									type: "value",
+									value: name,
+									id: newId,
+								}
+								newId++;
+								node[node.length-1].nodes.push(newNode);
+								name = "";
+								value = "";
+							}
 						}
 						switchNV = false;
 						break;
@@ -621,7 +660,6 @@ app.modules.target = (function(){
 				}
 			});
 			if(add){
-				conn.push(obj.test);
 				links.push(obj);
 				app.modules.target.reload();
 			}
@@ -629,13 +667,12 @@ app.modules.target = (function(){
 
 		reload : function(){
 			console.log(links);
-			conn.forEach(function(e){
-				jsPlumb.detachAllConnections(e);
-			});
 
 			links.forEach(function(e){
 				$("#"+e.test).parent().attr('id',"p"+e.test);
 				$("#"+e.data).parent().attr('id',"p"+e.data);
+				jsPlumb.recalculateOffsets($("ul"));
+				jsPlumb.repaintEverything();
 				jsPlumb.connect({
           source: "p"+e.test,
           target: "p"+e.data,
@@ -660,6 +697,7 @@ app.modules.target = (function(){
 				app.modules.target.addValue(test_tree);
 			}
       $('#tree').treeview({data: test_tree});
+			$('#tree').treeview('expandAll');
       document.getElementById('import').addEventListener('change', app.modules.target.import, false);
 			document.getElementById('json').addEventListener('change', app.modules.target.json, false);
 			$('#tree').on('nodeCollapsed', function(event, data) {
@@ -683,6 +721,7 @@ app.modules.target = (function(){
 				}
      		jsPlumb.detach(connection);
  			});
+			jsPlumb.setContainer($("body"));
     }
 
   }
