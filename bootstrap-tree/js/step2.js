@@ -674,7 +674,7 @@ app.modules.target = (function(){
 				jsPlumb.recalculateOffsets($("ul"));
 				jsPlumb.repaintEverything();
 				jsPlumb.connect({
-          source: "p"+e.test,
+          source: "p"+e.test, 
           target: "p"+e.data,
 					paintStyle:{ stroke:"black", strokeWidth:5 },
 					endpointStyle:{ stroke:"black" },
@@ -707,7 +707,7 @@ app.modules.target = (function(){
 				app.modules.target.reload();
 			});
 			jsPlumb.bind('click', function (connection, e) {
-				console.log("del");
+				console.log(connection);
 				var find = false;
 				var i = 0;
 				while((!find)&&(i<links.length)){
