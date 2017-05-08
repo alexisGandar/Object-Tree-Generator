@@ -10,6 +10,7 @@ app.modules.target = (function(){
 	var data_selected;
 	var test_selected;
 	var links = [];
+	var conn;
 	return{
     addValue : function(t){
       if(t != null){
@@ -446,6 +447,7 @@ app.modules.target = (function(){
 									{
 										text: value,
 										type: "value",
+										tree: "data",
 										value: value,
 										id: newId+1,
 									}
@@ -499,6 +501,7 @@ app.modules.target = (function(){
 							var newNode = {
 								text: "empty",
 								type: "value",
+								tree: "data",
 								value: value,
 								id: newId
 							};
@@ -511,6 +514,7 @@ app.modules.target = (function(){
 							var newNode = {
 								text: name,
 								type: "value",
+								tree: "data",
 								value: name,
 								id: newId,
 							}
@@ -533,6 +537,7 @@ app.modules.target = (function(){
 									{
 										text: value,
 										type: "value",
+										tree: "data",
 										value: value,
 										id: newId+1,
 									}
@@ -548,6 +553,7 @@ app.modules.target = (function(){
 								var newNode = {
 									text: name,
 									type: "value",
+									tree: "data",
 									value: name,
 									id: newId,
 								}
@@ -664,34 +670,82 @@ app.modules.target = (function(){
 				$("#"+obj.test).parent().attr('id',"p"+obj.test);
 				$("#"+obj.data).parent().attr('id',"p"+obj.data);
 				jsPlumb.connect({
-			        source: "p"+obj.test, 
+			        source: "p"+obj.test,
 			        target: "p"+obj.data,
 					paintStyle:{ stroke:"black", strokeWidth:5 },
 					endpointStyle:{ stroke:"black" },
 					anchor:["Left", "Right"],
 					detachable: false,
 			      });
+				jsPlumb.repaintEverything();
 			}
 		},
 
-		reload : function(){
-			console.log(links);
+		showModal : function(){
+			var id = '#modal';
+			$(id).html('<p id="xmlVersion" wrap="off">Delete this connection ?</p><button class="btn custom btn-default" id="delete">yes</button><button class="btn custom btn-default" id="cancel">cancel</button>');
 
-			links.forEach(function(e){
-				$("#"+e.test).parent().attr('id',"p"+e.test);
-				$("#"+e.data).parent().attr('id',"p"+e.data);
-				jsPlumb.recalculateOffsets($("ul"));
-				jsPlumb.repaintEverything();
-				jsPlumb.connect({
-          source: "p"+e.test, 
-          target: "p"+e.data,
-					paintStyle:{ stroke:"black", strokeWidth:5 },
-					endpointStyle:{ stroke:"black" },
-					anchor:[[1, 0.5, 1, 0],[0,0.5,0,1]],
-					detachable: false,
-        });
-			});
-		},
+			// On definit la taille de la fenetre modale
+			app.modules.target.resizeModal();
+
+			// Effet de transition
+			$('#fond').show();
+			// Effet de transition
+			$(id).show();
+
+			$('.popup .close').click(function (e) {
+				 // On désactive le comportement du lien
+				 e.preventDefault();
+				 // On cache la fenetre modale
+				 app.modules.target.hideModal();
+			 });
+			 $('#cancel').click(app.modules.target.hideModal);
+			 $('#delete').click(app.modules.target.delete);
+	 },
+
+	 hideModal : function(){
+			// On cache le fond et la fenêtre modale
+			$('#fond, .popup').hide();
+			$('.popup').html('');
+	 },
+
+	 resizeModal : function(){
+			var modal = $('#modal');
+			// On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+			var winH = $(document).height();
+			var winW = $(window).width();
+
+			// le fond aura la taille de l'écran
+			$('#fond').css({'width':winW,'height':winH});
+
+			// On récupère la hauteur et la largeur de l'écran
+			var winH = $(window).height();
+			// On met la fenêtre modale au centre de l'écran
+			modal.css('top', winH/2 - modal.height()/2);
+			modal.css('left', winW/2 - modal.width()/2);
+	 },
+
+	 delete : function(){
+		 console.log("bla");
+		 if(conn != undefined){
+			 var find = false;
+			 var i = 0;
+			 while((!find)&&(i<links.length)){
+				 if(("p"+links[i].test == conn.sourceId)&&("p"+links[i].data == conn.targetId)){
+					 find = true;
+					 links.splice(i,1);
+					 console.log(links);
+				 }else{
+					 i++;
+				 }
+			 }
+			 jsPlumb.detach(conn);
+			 jsPlumb.recalculateOffsets($("ul"));
+			 jsPlumb.repaintEverything();
+			 conn = undefined;
+			 app.modules.target.hideModal();
+		 }
+	 },
 
     test : function(){
 			var liste = $('#dataTree').treeview('getSelected');
@@ -716,24 +770,13 @@ app.modules.target = (function(){
 				app.modules.target.reload();
 			});
 			jsPlumb.bind('click', function (connection, e) {
-				console.log(connection);
-				var find = false;
-				var i = 0;
-				while((!find)&&(i<links.length)){
-					if(("p"+links[i].test == connection.sourceId)&&("p"+links[i].data == connection.targetId)){
-						find = true;
-						links.splice(i,1);
-						console.log(links);
-					}else{
-						i++;
-					}
-				}
-				jsPlumb.detach(connection);
-				jsPlumb.recalculateOffsets($("ul"));
-				jsPlumb.repaintEverything();
+				conn = connection;
+				app.modules.target.showModal();
  			});
+			$( window ).resize(function() {
+  			jsPlumb.repaintEverything();
+			});
     }
-
   }
 })();
 

@@ -254,14 +254,172 @@ app.modules.term = (function(){
 	var liste_del = [];
 	return{
 
+		showChild : function(node){
+			if((node.type == "node")&&(node.nodes == undefined)){
+				var termUrl = node.prop;
+				var done = false;
+				while(!done){
+					if((termUrl[termUrl.length-1] == "/") || (termUrl[termUrl.length-1] == "#")){
+						done = true;
+					}else{
+						termUrl = termUrl.slice(0, -1);
+					}
+				}
+
+				console.log(termUrl);
+				console.log(node.typeof);
+
+				var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+
+										+'SELECT DISTINCT ?property ?range'
+										+'{'
+	    							+' GRAPH <'+termUrl+'>'
+	  								+'{'
+	  								+'?property rdfs:domain <'+node.typeof+'>.'
+										+'?property rdfs:range ?range.'
+										+'}}';
+
+				var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
+
+				var pr = $.ajax({
+					url : uri,
+					type: "GET",
+					dataType: "json",
+					async	: true,
+					success :
+						function(res){
+							var i = node.id;
+							res.results.bindings.forEach(function(e){
+								var res = e.property.value.split("/");
+								if(e.range.value == "http://www.w3.org/2000/01/rdf-schema#Literal"){
+									var item = {
+										text: e.property.value +"   "+e.range.value,
+										type: "item",
+										name: res[res.length-1],
+										property: e.property.value,
+										id: i+1,
+									}
+									if(node.nodes==undefined){
+										node.nodes = [];
+									}
+									node.nodes.push(item);
+									i++;
+								}else{
+									var n = {
+										text: e.property.value +" "+e.range.value,
+										type: "node",
+										prop: e.property.value,
+										id: i+1,
+										typeof: e.range.value,
+									}
+									if(node.nodes==undefined){
+										node.nodes = [];
+									}
+									node.nodes.unshift(n);
+									i++;
+								}
+							});
+							var check = $('#subTree').treeview('getChecked');
+							var expand = $('#subTree').treeview('getExpanded');
+							app.modules.term.replace(node,test_tree);
+							console.log(test_tree);
+							$('#subTree').treeview('remove');
+							$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
+							$('#subTree').treeview('expandAll');
+							check.forEach(function(e){
+								if(e.nodeId>node.nodeId){
+									e.nodeId = e.nodeId + res.results.bindings.length;
+								}
+								$('#subTree').treeview('checkNode',e.nodeId);
+							});
+							// expand.forEach(function(e){
+							// 	if(e.nodeId>node.nodeId){
+							// 		e.nodeId = e.nodeId + res.results.bindings.length;
+							// 	}
+							// });
+							$('#subTree').on('nodeChecked', function(event, data) {
+								app.modules.term.checkParent(data);
+								app.modules.term.showChild(data);
+							});
+							$('#subTree').on('nodeUnchecked', function(event, data) {
+									app.modules.term.unCheckChild(data);
+							});
+							console.log(check.length);
+						}
+				});
+
+			}
+		},
+
+		replace : function(node,t){
+			var done = false;
+			var i = 0;
+			while((!done)&&(i<t.length)){
+				if(t[i].id==node.id){
+					t[i] = node;
+					done = true;
+				}else{
+					if(t[i].nodes != undefined){
+						done = app.modules.term.replace(node,t[i].nodes)
+					}
+				}
+				i++;
+			}
+			return done;
+		},
+
 		unCheckChild : function(node){
 			if((node.nodes != undefined)&&(node.nodes != null)){
-				node.nodes.forEach(function(e){
-					$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
-					if((e.nodes != undefined)&&(e.nodes != null)){
-						app.modules.term.unCheckChild(e);
+				// node.nodes.forEach(function(e){
+				// 	$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+				// 	if((e.nodes != undefined)&&(e.nodes != null)){
+				// 		app.modules.term.unCheckChild(e);
+				// 	}
+				// });
+				var checked = $('#subTree').treeview('getChecked');
+				if(node.parentId != undefined){
+					var parent = $('#subTree').treeview('getNode', node.parentId);
+					var id = app.modules.term.getCloser(node,parent);
+					if(id = false){
+						checked.forEach(function(e){
+							if(e.nodeId>node.id){
+								$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+							}
+						});
+					}else{
+						checked.forEach(function(e){
+							if((e.nodeId>node.id)&&(e.nodeId<id)){
+								$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+							}
+						});
 					}
-				});
+				}else{
+					checked.forEach(function(e){
+						if(e.nodeId>node.id){
+							$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+						}
+					});
+				}
+
+			}
+		},
+
+		getCloser : function(node,parent){
+			var find = false;
+			var i = 0;
+			while((!find)&&(i<parent.nodes.length)){
+				if(node.nodeId < parent.nodes[i].nodeId){
+					return parent.nodes[i].nodeId;
+				}else{
+					i++;
+				}
+			}
+			if(!find){
+				if(parent.parentId==undefined){
+					return false;
+				}
+				var GrandParent = $('#subTree').treeview('getNode', parent.parentId);
+				app.modules.term.getCloser(node,GrandParent);
 			}
 		},
 
@@ -353,23 +511,41 @@ app.modules.term = (function(){
 
 			test_tree.push(root);
 			if(t == "node"){
-				var i = 0;
-				while((i<5) && (i<tab.length)){
-					var res = tab[i].property.value.split("/");
-					var item = {
-						text: tab[i].property.value,
-						type: "item",
-						name: res[res.length-1],
-						property: tab[i].property.value,
-						id: i+1,
+				var i = 1;
+				tab.forEach(function(e){
+					var res = e.property.value.split("/");
+					if(e.range.value == "http://www.w3.org/2000/01/rdf-schema#Literal"){
+						var item = {
+							text: e.property.value +"   "+e.range.value,
+							type: "item",
+							name: res[res.length-1],
+							property: e.property.value,
+							id: i+1,
+						}
+						test_tree[0].nodes.push(item);
+						i++;
+					}else{
+						var node = {
+							text: e.property.value +" "+e.range.value,
+							type: "node",
+							prop: e.property.value,
+							id: i+1,
+							typeof: e.range.value,
+						}
+						test_tree[0].nodes.unshift(node);
+						i++;
 					}
-					test_tree[0].nodes.unshift(item);
-					i++;
-				}
+				});
 			}
 
 			$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
-
+			$('#subTree').on('nodeChecked', function(event, data) {
+				app.modules.term.checkParent(data);
+				app.modules.term.showChild(data);
+			});
+			$('#subTree').on('nodeUnchecked', function(event, data) {
+  				app.modules.term.unCheckChild(data);
+			});
 		},
 
 		recursiveAdd : function(tab){
@@ -396,14 +572,16 @@ app.modules.term = (function(){
 
 		test : function(){
 			var liste = $('#subTree').treeview('getSelected');
-			console.log(test_tree);
+			console.log(liste);
 		},
 
 
 		init : function(){
 
 			$('#subTree').on('nodeChecked', function(event, data) {
+				console.log("bla");
 				app.modules.term.checkParent(data);
+				app.modules.term.showChild(data);
 			});
 			$('#subTree').on('nodeUnchecked', function(event, data) {
   				app.modules.term.unCheckChild(data);
@@ -424,30 +602,38 @@ app.modules.table = (function(){
 
 		select : function(term){
 			var termUrl;
+			var prefix;
+			var name;
 			var done = false;
 			var i = 0;
 			while(!done){
 				if(tab.results[i].prefixedName[0] == term){
 					termUrl = tab.results[i].uri[0];
+					prefix = tab.results[i]["vocabulary.prefix"][0];
+					name = tab.results[i].prefixedName[0];
 					done = true;
 				}
 				i++;
 			}
+			done = false;
+			while(!done){
+				if((termUrl[termUrl.length-1] == "/") || (termUrl[termUrl.length-1] == "#")){
+					done = true;
+				}else{
+					termUrl = termUrl.slice(0, -1);
+				}
+			}
 
-			var query = 'PREFIX  xsd:    <http://www.w3.org/2001/XMLSchema#>'
-									+'PREFIX  dc:     <http://purl.org/dc/elements/1.1/>'
-									+'PREFIX  :       <.>'
-									+'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+			var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+									+'PREFIX '+prefix+':  <'+termUrl+'>'
 
-									+'SELECT *'
+									+'SELECT DISTINCT ?property ?range'
 									+'{'
-    							+'GRAPH ?g { {'
-  								+'?property rdfs:domain ?class . '
-  								+'<'+termUrl+'> rdfs:subClassOf+ ?class.'
-									+'} UNION {'
-  								+'?property rdfs:domain <'+termUrl+'>.'
-									+'}}'
-									+'}';
+    							+' GRAPH <'+termUrl+'>'
+  								+'{'
+  								+'?property rdfs:domain '+name+'.'
+									+'?property rdfs:range ?range.'
+									+'}}';
 
 			var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
 
@@ -457,6 +643,7 @@ app.modules.table = (function(){
 				dataType: "json",
 				success :
 					function(res){
+						console.log(res.results.bindings);
 						app.modules.term.generate(res.results.bindings,term);
 					}
 			});
@@ -490,6 +677,7 @@ app.modules.table = (function(){
 			});
 
 			$('#submitTerm').click(app.modules.table.search);
+
 		}
 	}
 
@@ -606,7 +794,6 @@ app.modules.convert = (function(){
 		},
 
 		saveTextAsFile : function(){
-			console.log('grgqegqre');
     	var textToWrite = $(xmlVersion).val();
     	var textFileAsBlob = new Blob([textToWrite], {type:'text/xml'});
     	var fileNameToSaveAs = "Tree";

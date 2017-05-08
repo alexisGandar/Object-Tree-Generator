@@ -42,7 +42,12 @@ app.modules.tree = (function(){
 		},
 
 		init : function(){
-			$('#tree').jstree();
+			$('#tree').jstree({'core' : {
+             "themes": {
+                "name": "default-dark",
+                "dots": true,
+                "icons": true
+            },}});
 			$('#tree').bind("select_node.jstree", app.modules.tree.sel);
 			$("#addN").click(app.modules.tree.addNode);
 			$("#addI").click(app.modules.tree.addItem);
