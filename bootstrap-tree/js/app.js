@@ -162,6 +162,24 @@ app.modules.tree = (function(){
 
 		},
 
+		find : function(t,id){
+			var i = 0;
+			var res;
+			while((i<t.length) && (res == undefined)){
+				if(t[i].id == id){
+					res = t[i];
+				}else{
+					if(t[i].nodes != undefined){
+						res = app.modules.tree.find(t[i].nodes,id);
+					}else{
+						i++;
+					}
+				}
+			}
+			console.log(res);
+			return res;
+		},
+
 		test : function(){
 			var liste = $('#tree').treeview('getSelected');
 			console.log(liste[0]);
@@ -182,60 +200,7 @@ app.modules.tree = (function(){
 				text: "Root",
 				type: "root",
 				id: "0",
-				nodes: [
-				{
-					text: "Person",
-					type: "node",
-					typeof : "Person",
-					id: "1",
-					nodes: [
-					{
-						text: "http://something/youKnow/name",
-						type: "item",
-						name: "name",
-						property: "http://something/youKnow/name",
-						id: "2"
-					},
-					{
-						text: "http://something/youKnow/age",
-						type: "item",
-						name: "age",
-						property: "http://something/youKnow/age",
-						id: "3"
-					},
-					{
-						text: "Adress",
-						type: "node",
-						typeof: "Adress",
-						property: "",
-						id: "5",
-						nodes: [
-							{
-								text: "http://something/youKnow/street",
-								type: "item",
-								name: "street",
-								property: "http://something/youKnow/street",
-								id: "6"
-							},
-							{
-								text: "http://something/youKnow/number",
-								type: "item",
-								name: "number",
-								property: "http://something/youKnow/number",
-								id: "7"
-							},
-						]
-					},
-					]
-				},
-				{
-					text: "http://something/youKnow/health",
-					type: "item",
-					name: "health",
-					property: "http://something/youKnow/health",
-					id: "4"
-				},
-				]
+				nodes: []
 			},
 			];
 
@@ -252,6 +217,7 @@ app.modules.tree = (function(){
 app.modules.term = (function(){
 	var test_tree;
 	var liste_del = [];
+	var newId;
 	return{
 
 		showChild : function(node){
@@ -288,7 +254,6 @@ app.modules.term = (function(){
 					async	: true,
 					success :
 						function(res){
-							var i = node.id;
 							res.results.bindings.forEach(function(e){
 								var res = e.property.value.split("/");
 								if(e.range.value == "http://www.w3.org/2000/01/rdf-schema#Literal"){
@@ -297,26 +262,26 @@ app.modules.term = (function(){
 										type: "item",
 										name: res[res.length-1],
 										property: e.property.value,
-										id: i+1,
+										id: newId,
 									}
+									newId++;
 									if(node.nodes==undefined){
 										node.nodes = [];
 									}
 									node.nodes.push(item);
-									i++;
 								}else{
 									var n = {
 										text: e.property.value +" "+e.range.value,
 										type: "node",
 										prop: e.property.value,
-										id: i+1,
+										id: newId,
 										typeof: e.range.value,
 									}
+									newId++;
 									if(node.nodes==undefined){
 										node.nodes = [];
 									}
 									node.nodes.unshift(n);
-									i++;
 								}
 							});
 							var check = $('#subTree').treeview('getChecked');
@@ -325,26 +290,22 @@ app.modules.term = (function(){
 							console.log(test_tree);
 							$('#subTree').treeview('remove');
 							$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
-							$('#subTree').treeview('expandAll');
+							$('#subTree').treeview('expandNode',node.nodeId);
 							check.forEach(function(e){
 								if(e.nodeId>node.nodeId){
 									e.nodeId = e.nodeId + res.results.bindings.length;
 								}
 								$('#subTree').treeview('checkNode',e.nodeId);
 							});
-							// expand.forEach(function(e){
-							// 	if(e.nodeId>node.nodeId){
-							// 		e.nodeId = e.nodeId + res.results.bindings.length;
-							// 	}
-							// });
+							expand.forEach(function(e){
+								$('#subTree').treeview('expandNode',e.nodeId);
+							});
 							$('#subTree').on('nodeChecked', function(event, data) {
-								app.modules.term.checkParent(data);
-								app.modules.term.showChild(data);
+								app.modules.term.checkParent(data,data,'#subTree');
 							});
 							$('#subTree').on('nodeUnchecked', function(event, data) {
-									app.modules.term.unCheckChild(data);
+									app.modules.term.unCheckChild(data,'#subTree');
 							});
-							console.log(check.length);
 						}
 				});
 
@@ -368,43 +329,46 @@ app.modules.term = (function(){
 			return done;
 		},
 
-		unCheckChild : function(node){
+		unCheckChild : function(node,tree){
 			if((node.nodes != undefined)&&(node.nodes != null)){
-				// node.nodes.forEach(function(e){
-				// 	$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
-				// 	if((e.nodes != undefined)&&(e.nodes != null)){
-				// 		app.modules.term.unCheckChild(e);
-				// 	}
-				// });
-				var checked = $('#subTree').treeview('getChecked');
-				if(node.parentId != undefined){
-					var parent = $('#subTree').treeview('getNode', node.parentId);
-					var id = app.modules.term.getCloser(node,parent);
-					if(id = false){
-						checked.forEach(function(e){
-							if(e.nodeId>node.id){
-								$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
-							}
-						});
+				if(tree == "#editTree"){
+					node.nodes.forEach(function(e){
+						$(tree).treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+						if((e.nodes != undefined)&&(e.nodes != null)){
+							app.modules.term.unCheckChild(e,tree);
+						}
+					});
+				}else{
+					var checked = $(tree).treeview('getChecked');
+					if(node.parentId != undefined){
+						var parent = $(tree).treeview('getNode', node.parentId);
+						var id = app.modules.term.getCloser(node,parent,tree);
+						if(id == false){
+							checked.forEach(function(e){
+								if(e.nodeId>node.id){
+									$(tree).treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+								}
+							});
+						}else{
+							checked.forEach(function(e){
+
+								if((e.nodeId>node.nodeId)&&(e.nodeId<id)){
+									$(tree).treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+								}
+							});
+						}
 					}else{
 						checked.forEach(function(e){
-							if((e.nodeId>node.id)&&(e.nodeId<id)){
-								$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+							if(e.nodeId>node.id){
+								$(tree).treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
 							}
 						});
 					}
-				}else{
-					checked.forEach(function(e){
-						if(e.nodeId>node.id){
-							$('#subTree').treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
-						}
-					});
 				}
-
 			}
 		},
 
-		getCloser : function(node,parent){
+		getCloser : function(node,parent,tree){
 			var find = false;
 			var i = 0;
 			while((!find)&&(i<parent.nodes.length)){
@@ -418,16 +382,20 @@ app.modules.term = (function(){
 				if(parent.parentId==undefined){
 					return false;
 				}
-				var GrandParent = $('#subTree').treeview('getNode', parent.parentId);
+				var GrandParent = $(tree).treeview('getNode', parent.parentId);
 				app.modules.term.getCloser(node,GrandParent);
 			}
 		},
 
-		checkParent : function(node){
-			$('#subTree').treeview('checkNode', [ node.nodeId, { silent: true } ]);
+		checkParent : function(node,first,tree){
+			$(tree).treeview('checkNode', [ node.nodeId, { silent: true } ]);
 			if((node.parentId != undefined) && (node.parentId != null)){
-				var parent = $('#subTree').treeview('getParent', node);
-				app.modules.term.checkParent(parent);
+				var parent = $(tree).treeview('getParent', node);
+			 	app.modules.term.checkParent(parent,first,tree);
+			}else{
+				if(tree == '#subTree'){
+					app.modules.term.showChild(first);
+				}
 			}
 		},
 
@@ -484,6 +452,7 @@ app.modules.term = (function(){
 		},
 
 		generate : function(tab,term){
+			newId = 0;
 			$('#subTree').treeview('remove');;
 			test_tree = [];
 			var t;
@@ -496,19 +465,19 @@ app.modules.term = (function(){
 					name: res[1],
 					property: term,
 					type: t,
-					id: "0",
+					id: newId,
 				}
 			}else{
 				t = "node";
 				root = {
 					text: term,
 					type: t,
-					id: "0",
+					id: newId,
 					typeof: term,
 					nodes: []
 				}
 			}
-
+			newId++;
 			test_tree.push(root);
 			if(t == "node"){
 				var i = 1;
@@ -520,8 +489,10 @@ app.modules.term = (function(){
 							type: "item",
 							name: res[res.length-1],
 							property: e.property.value,
-							id: i+1,
+							range: e.range.value,
+							id: newId,
 						}
+						newId++;
 						test_tree[0].nodes.push(item);
 						i++;
 					}else{
@@ -529,22 +500,22 @@ app.modules.term = (function(){
 							text: e.property.value +" "+e.range.value,
 							type: "node",
 							prop: e.property.value,
-							id: i+1,
+							id: newId,
 							typeof: e.range.value,
 						}
 						test_tree[0].nodes.unshift(node);
 						i++;
+						newId++;
 					}
 				});
 			}
 
 			$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
 			$('#subTree').on('nodeChecked', function(event, data) {
-				app.modules.term.checkParent(data);
-				app.modules.term.showChild(data);
+				app.modules.term.checkParent(data,data,'#subTree');
 			});
 			$('#subTree').on('nodeUnchecked', function(event, data) {
-  				app.modules.term.unCheckChild(data);
+  			app.modules.term.unCheckChild(data,'#subTree');
 			});
 		},
 
@@ -579,12 +550,10 @@ app.modules.term = (function(){
 		init : function(){
 
 			$('#subTree').on('nodeChecked', function(event, data) {
-				console.log("bla");
-				app.modules.term.checkParent(data);
-				app.modules.term.showChild(data);
+				app.modules.term.checkParent(data,data,'#subTree');
 			});
 			$('#subTree').on('nodeUnchecked', function(event, data) {
-  				app.modules.term.unCheckChild(data);
+  			app.modules.term.unCheckChild(data,'#subTree');
 			});
 
 			$("#addTerm").click(app.modules.term.add);
@@ -689,6 +658,7 @@ app.modules.convert = (function(){
 
 		conv : function(){
 			var tree = app.modules.tree.getTree();
+			console.log(tree);
 			var s = app.modules.convert.recursiveConv(tree,0,"");
 			console.log(s);
 			app.modules.convert.showModal(s);
@@ -704,10 +674,10 @@ app.modules.convert = (function(){
 					s = s + "</objects>";
 				}else{
 					if((e.type == "node")&&(e.nodes == undefined)){
-						console.log('lol');
-						var res = e.typeof.split(":");
-						e.name = res[1];
-						e.property = e.typeof;
+						var res = e.typeof.split("/");
+						e.name = res[res.length-1];
+						e.property = e.prop;
+						e.range = e.typeof;
 					}
 					if(e.nodes != undefined){
 						if(lvl == 1){
@@ -718,7 +688,7 @@ app.modules.convert = (function(){
 								i++;
 								s = s + "\t";
 							}
-							s = s + '<object typeof ="'+e.typeof+'" property="'+e.property+'">' + "\n";
+							s = s + '<object typeof ="'+e.typeof+'" property="'+e.prop+'" range="'+e.typeof+'">' + "\n";
 						}
 						var i = 0;
 						while(i<lvl){
@@ -740,7 +710,7 @@ app.modules.convert = (function(){
 							i++;
 							s = s + "\t";
 						}
-						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'">' + "\n";
+						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'" range="'+e.range+'">' + "\n";
 					}
 				}
 			});
@@ -749,7 +719,7 @@ app.modules.convert = (function(){
 
 		 showModal : function(s){
 		   var id = '#modal';
-		   $(id).html('<textarea id="xmlVersion" wrap="off">'+s+'</textarea><button class="btn custom btn-default" id="dl">download</button><button class="btn custom btn-default"  id="step2">step2</button><button class="btn custom btn-default" id="cancel">cancel</button>');
+		   $(id).html('<textarea id="xmlVersion" wrap="off">'+s+'</textarea><button class="btn custom2 btn-default" id="dl">download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button><button class="btn custom2 btn-default" id="step2">step2<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="cancel">cancel</button>');
 
 		   // On definit la taille de la fenetre modale
 		   app.modules.convert.resizeModal();
@@ -822,9 +792,9 @@ app.modules.convert = (function(){
 
 	step2 : function(){
 		var id = app.modules.tree.getId();
-		var tree = app.modules.tree.getTree();
+		var tree = $('#xmlVersion').val();
 		sessionStorage.id = id;
-		sessionStorage.tree = JSON.stringify(tree);
+		sessionStorage.tree = tree;
 		sessionStorage.load = 1;
 		var link = document.createElement("a");
 		link.href = "view/step2.html";
@@ -839,7 +809,147 @@ app.modules.convert = (function(){
 })();
 
 
+app.modules.edit = (function(){
+		var treeEdit;
+		var liste_del = [];
+	return{
+
+		showModal : function(){
+			var selected = $('#tree').treeview('getSelected');
+			if((selected.length == 0) || (selected[0].type == "root")){
+				alert("Please select a valid note to edit");
+			}else{
+				var treeToModif = app.modules.tree.getTree();
+				treeEdit = [];
+				treeEdit.push(app.modules.tree.find(treeToModif,selected[0].id));
+				app.modules.tree.del();
+				$('#tree').treeview('selectNode', selected[0].parentId);
+
+				var id = '#modal3';
+				$(id).html('<div id="editTree"></div><button class="btn custom2 btn-default" id="confirm">Confirm</button>');
+
+				// On definit la taille de la fenetre modale
+				app.modules.edit.resizeModal();
+
+				// Effet de transition
+				$('#fond3').fadeIn(1000);
+				$('#fond3').fadeTo("slow",0.8);
+				// Effet de transition
+				$(id).fadeIn(2000);
+
+				$('.popup3 .close').click(function (e) {
+					 // On désactive le comportement du lien
+					 e.preventDefault();
+					 // On cache la fenetre modale
+					 app.modules.edit.hideModal();
+				 });
+				 selected[0].parentId = undefined;
+				 $('#editTree').treeview({data: selected, showCheckbox: true, selectable: false});
+				 $('#editTree').treeview('checkAll', { silent: true });
+				 $('#editTree').on('nodeChecked', function(event, data) {
+	 				app.modules.term.checkParent(data,data,'#editTree');
+	 			});
+	 			$('#editTree').on('nodeUnchecked', function(event, data) {
+	   			app.modules.term.unCheckChild(data,'#editTree');
+	 			});
+				 $('#confirm').click(app.modules.edit.add);
+			}
+	 },
+
+	 hideModal : function(){
+			// On cache le fond et la fenêtre modale
+			$('#fond3, .popup3').hide();
+			$('.popup3').html('');
+	 },
+
+	 resizeModal : function(){
+			var modal = $('#modal3');
+			// On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+			var winH = $(document).height();
+			var winW = $(window).width();
+
+			// le fond aura la taille de l'écran
+			$('#fond3').css({'width':winW,'height':winH});
+
+			// On récupère la hauteur et la largeur de l'écran
+			var winH = $(window).height();
+			// On met la fenêtre modale au centre de l'écran
+			modal.css('top', winH/2 - modal.height()/2);
+			modal.css('left', winW/2 - modal.width()/2);
+	 },
+
+	 add : function(){
+		 var x = $('#tree').treeview('getSelected');
+		 if((x[0] == undefined) || (x[0].type == "item")){
+			 alert("Please select a valid node");
+		 }else{
+			 if($('#editTree').treeview('getChecked').length != 0 ){
+				 app.modules.edit.recursiveAdd(treeEdit);
+				 liste_del.forEach(function(e){
+					 app.modules.edit.recursiveDel(treeEdit,e);
+				 });
+				 liste_del = [];
+				 console.log(treeEdit);
+				 app.modules.tree.add(treeEdit);
+				 treeEdit = undefined;
+				 $('#editTree').treeview('remove');
+			 }else{
+				 alert("Check a term to add");
+			 }
+		 }
+	 },
+
+	 recursiveAdd : function(tab){
+		 var liste = $('#editTre').treeview('getChecked');
+		 tab.forEach(function(e){
+			 var check = false;
+			 var i = 0;
+			 while((i < liste.length)&&(!check)){
+				 if(liste[i].id == e.id){
+					 check = true;
+				 }else{
+					 i++;
+				 }
+			 }
+			 if(!check){
+				 liste_del.push(e.id);
+			 }else{
+				 if(e.type == "node"){
+					 app.modules.edit.recursiveAdd(e.nodes);
+				 }
+			 }
+		 });
+	 },
+
+	 recursiveDel : function(t,id){
+		 var done = false;
+		 var i = 0;
+		 while((!done) && (i < t.length)){
+			 var x = t[i];
+			 if(x.id == id){
+				 t.splice(i,1);
+				 return true;
+			 }else{
+				 if(x.nodes != undefined){
+					 done = app.modules.edit.recursiveDel(x.nodes,id);
+					 i++;
+				 }else {
+					 i++;
+				 }
+			 }
+		 }
+		 return false;
+	 },
+
+		init : function(){
+			$('#edit').click(app.modules.edit.showModal);
+		}
+	}
+})();
+
+
 $(document).ready(function () {
+	app.modules.edit.init();
 	app.modules.table.init();
   app.modules.tree.init();
 	app.modules.term.init();

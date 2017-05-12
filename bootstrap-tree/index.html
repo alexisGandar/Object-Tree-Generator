@@ -14,44 +14,70 @@
 	  <link href="css/bootstrap-treeview.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.10.1/bootstrap-table.min.css">
 
-
   </head>
   <body>
     <div id="fond"></div>
     <div id="modal" class="popup"></div>
-    <div class="treeObj">
-      <h2>Object Tree</h2>
-		  <div id="tree"></div>
-      <button class="btn custom btn-default" id="addN">Add Node</button><button class="btn custom btn-default" id="addI">Add Item</button><button class="btn custom btn-default" id="del">Delete</button>
+    <div id="fond3"></div>
+    <div id="modal3" class="popup3"></div>
+    <div class="header">
+      <center>
+        <div class="">
+          <img class="imgBan" id="imgBan1" src="img/snt.png" alt="SNT logo">
+          <img class="imgBan" id="imgBan2" src="img/UniversityLu.png" alt="University Luxembour logo">
+          <h3 >Welcome to my tool</h3>
+        </div>
+      </center>
+    </div>
+    <div class="nav">
+      <ul>
+        <li><a href="index.html"><span>Step 1</span></a></li>
+        <li><a href="view/step2.html"><span>Step 2</span></a></li>
+      </ul>
+    </div>
+    <div id="treeObj" class="block">
+      <div class="title">
+        <span class="glyphicon glyphicon-list glificon" aria-hidden="true"></span>
+        <h4 class='name' id='objTree'>Object Tree</h4>
+        <small>Select nodes that you want in the request</small>
+      </div>
+      <div class="button">
+        <button class="btn custom btn-default" id="del">Delete</button><button class="btn custom btn-default" id="edit">Edit</button><button class="btn custom btn-default" id="convert">O-DF<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>
+      </div>
+		  <div class="tree" id='tree'></div>
 	  </div>
 
-    <div class="addTerm" >
-      <h2>Add element to selected Object</h2>
-      <div class="search">
-        <div class="form-group">
-          <label>Search term</label>
-          <input class="form-control" id="inputTerm">
+    <div id="term" class="block">
+      <div class="title">
+        <img src="img/LOV.png" id="logo" alt="LOV logo">
+        <h4 class='name' id='termText'>Add element to selected Object</h4>
+        <small>Search for term and add them to the OD-F tree</small>
+      </div>
+      <div class="content">
+        <div id="contentTerm">
+          <div class="search">
+            <label>Search term</label>
+            <div class="form-group">
+              <input class="form-control" id="inputTerm">
+              <button id="submitTerm" class="btn btn-default">Search</button>
+            </div>
+          </div>
+          <div class="term">
+            <table id="table" class="table table-striped table-hover">
+              <thead>
+                <tr class="clickable-row">
+                  <th data-field="prefixedName">Term</th>
+                  <th data-field="score">Score</th>
+                </tr>
+              </thead>
+            </table>
+          </div>
         </div>
-        <button id="submitTerm" class="btn btn-default">Search</button>
+        <div class="tree" id="subTree"></div>
       </div>
-      <div class="term">
-        <table id="table" class="table table-striped table-hover">
-          <thead>
-            <tr class="clickable-row">
-              <th data-field="prefixedName">Term</th>
-              <th data-field="score">Score</th>
-            </tr>
-          </thead>
-        </table>
-      </div>
-      <div id="subTree">
-
-      </div>
-      <button class="btn custom btn-default" id="addTerm">Add term</button>
     </div>
-
-    <div class="odf">
-        <button class="btn custom btn-default" id="convert">O-DF</button>
+    <div class="but">
+      <button class="btn btn-default" id="addTerm"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span>Add term</button>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

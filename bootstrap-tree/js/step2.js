@@ -12,41 +12,62 @@ app.modules.target = (function(){
 	var links = [];
 	var conn;
 	return{
-    addValue : function(t){
-      if(t != null){
-        t.forEach(function(e) {
-          if(e.type == "root"){
-            app.modules.target.addValue(e.nodes);
-          }else{
-            if(e.type == "node"){
-              if((e.nodes == undefined) || (e.nodes.length == 0)){
-                e.type = "item";
-                e.nodes = [
-                  {
-                    text: "Value",
-            				type: "value",
-            				id: newId,
-                  }
-                ];
-                newId++;
-              }else{
-                app.modules.target.addValue(e.nodes);
-              }
-            }else{
-              e.nodes = [
-                {
-                  text: "Value",
-                  type: "value",
-                  id: newId,
-                }
-              ];
-              newId++;
-            }
-          }
-        });
-      }
-    },
+    // addValue : function(t){
+		// 	console.log(t);
+    //   if(t != null){
+    //     t.forEach(function(e) {
+    //       if(e.type == "root"){
+    //         app.modules.target.addValue(e.nodes);
+    //       }else{
+    //         if(e.type == "node"){
+    //           if((e.nodes == undefined) || (e.nodes.length == 0)){
+    //             e.type = "item";
+    //             e.nodes = [
+    //               {
+    //                 text: "Value",
+    //         				type: "value",
+    //         				id: newId,
+    //               }
+    //             ];
+    //             newId++;
+    //           }else{
+    //             app.modules.target.addValue(e.nodes);
+    //           }
+    //         }else{
+    //           e.nodes = [
+    //             {
+    //               text: "Value",
+    //               type: "value",
+    //               id: newId,
+    //             }
+    //           ];
+    //           newId++;
+    //         }
+    //       }
+    //     });
+    //   }
+    // },
 
+		ODF : function(s){
+			console.log(s);
+			var res = s.split(">");
+			test_tree = [];
+			var newNode = {
+				text: "Root",
+				type: "root",
+				id: newId,
+				nodes: []
+			};
+			newId++;
+			test_tree.push(newNode);
+			app.modules.target.generate(res,test_tree[0]);
+		},
+
+		unSelect : function(list){
+			list.forEach(function(e){
+				$('#tree').treeview('unselectNode', e.nodeId);
+			});
+		},
 
     import : function(evt){
       newId = 0;
@@ -76,7 +97,9 @@ app.modules.target = (function(){
 							sessionStorage.id = newId;
 							sessionStorage.load = 0;
 							sessionStorage.tree = JSON.stringify(test_tree);
+							console.log(test_tree);
               $('#tree').treeview({data: test_tree});
+							$('#tree').treeview('expandAll');
             };
           })(f);
 
@@ -158,9 +181,9 @@ app.modules.target = (function(){
             node[node.length-1].nodes.push(newNode);
             node.push(newNode);
           }else{
-						var term;
+						var range;
 						var i = 0;
-						while((term == undefined)&&(i<res.length)){
+						while((range == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("typeof")){
 								if(res[i] == "typeof"){
@@ -170,15 +193,15 @@ app.modules.target = (function(){
 										i++;
 										i = app.modules.target.space(i,res);
 										if(res[i].includes(">")){
-											term = res[i].slice(1,res[i].length-2);
+											range = res[i].slice(1,res[i].length-2);
 										}else{
-											term = res[i].slice(1,res[i].length-1);
+											range = res[i].slice(1,res[i].length-1);
 										}
 									}else{
 										if(res[i].includes(">")){
-											term = res[i].slice(2,res[i].length-2);
+											range = res[i].slice(2,res[i].length-2);
 										}else{
-											term = res[i].slice(2,res[i].length-1);
+											range = res[i].slice(2,res[i].length-1);
 										}
 									}
 								}else{
@@ -186,15 +209,15 @@ app.modules.target = (function(){
 										i++;
 										i = app.modules.target.space(i,res);
 										if(res[i].includes(">")){
-											term = res[i].slice(1,res[i].length-2);
+											range = res[i].slice(1,res[i].length-2);
 										}else{
-											term = res[i].slice(1,res[i].length-1);
+											range = res[i].slice(1,res[i].length-1);
 										}
 									}else {
 										if(res[i].includes(">")){
-											term = res[i].slice(8,res[i].length-2);
+											range = res[i].slice(8,res[i].length-2);
 										}else{
-											term = res[i].slice(8,res[i].length-1);
+											range = res[i].slice(8,res[i].length-1);
 										}
 									}
 								}
@@ -202,12 +225,56 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
-            //term = res[2].slice(2,res[2].length-1);
+						i = 0
+						var pro;
+						while((pro == undefined)&&(i<res.length)){
+							i = app.modules.target.space(i,res);
+							if(res[i].includes("property")){
+								if(res[i] == "property"){
+									i++;
+									i = app.modules.target.space(i,res);
+									if(res[i] == "="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											pro = res[i].slice(1,res[i].length-2);
+										}else{
+											pro = res[i].slice(1,res[i].length-1);
+										}
+									}else{
+										if(res[i].includes(">")){
+											pro = res[i].slice(2,res[i].length-2);
+										}else{
+											pro = res[i].slice(2,res[i].length-1);
+										}
+									}
+								}else{
+									if(res[i] == "property="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											pro = res[i].slice(1,res[i].length-2);
+										}else{
+											pro = res[i].slice(1,res[i].length-1);
+										}
+									}else {
+										if(res[i].includes(">")){
+											pro = res[i].slice(10,res[i].length-2);
+										}else{
+											pro = res[i].slice(10,res[i].length-1);
+										}
+									}
+								}
+							}else{
+								i++;
+							}
+						}
+            //range = res[2].slice(2,res[2].length-1);
             var newNode = {
-              text: term,
-              typeof: term,
+              text: pro+" "+range,
+              typeof: range,
               type: "Node",
-              property: "",
+              property: pro,
               id: newId,
               nodes: []
             };
@@ -219,6 +286,7 @@ app.modules.target = (function(){
           if(r[r.length-1] == "<infoItem"){
 						var na;
 						var pro;
+						var range;
 						var i = 0;
 						while ((i<res.length)&&(na==undefined)) {
 							i = app.modules.target.space(i,res);
@@ -306,12 +374,59 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
+
+						i = 0;
+
+						while((range == undefined)&&(i<res.length)){
+							i = app.modules.target.space(i,res);
+							if(res[i].includes("range")){
+								if(res[i] == "range"){
+									i++;
+									i = app.modules.target.space(i,res);
+									if(res[i] == "="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											range = res[i].slice(1,res[i].length-2);
+										}else{
+											range = res[i].slice(1,res[i].length-1);
+										}
+									}else{
+										if(res[i].includes(">")){
+											range = res[i].slice(2,res[i].length-2);
+										}else{
+											range = res[i].slice(2,res[i].length-1);
+										}
+									}
+								}else{
+									if(res[i] == "range="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											range = res[i].slice(1,res[i].length-2);
+										}else{
+											range = res[i].slice(1,res[i].length-1);
+										}
+									}else {
+										if(res[i].includes(">")){
+											range = res[i].slice(7,res[i].length-2);
+										}else{
+											range = res[i].slice(7,res[i].length-1);
+										}
+									}
+								}
+							}else{
+								i++;
+							}
+						}
+
             //na = res[1].slice(6,res[1].length-1);
             //pro = res[2].slice(10,res[2].length-2);
             var newNode = {
-              text: pro,
+              text: pro + " "+ range,
               name: na,
               type: "item",
+							range : range,
               property: pro,
               id: newId,
               nodes: [
@@ -623,7 +738,7 @@ app.modules.target = (function(){
 						app.modules.target.changeColor(data_selected,"selected","round");
 						test_selected = undefined;
 						data_selected = undefined;
-						app.modules.target.addLink(obj);
+						app.modules.target.addLink(obj,"black");
 					}
 				}
 			}else{
@@ -647,7 +762,7 @@ app.modules.target = (function(){
 						app.modules.target.changeColor(data_selected,"selected","round");
 						test_selected = undefined;
 						data_selected = undefined;
-						app.modules.target.addLink(obj);
+						app.modules.target.addLink(obj,"black");
 					}
 				}
 			}
@@ -658,7 +773,7 @@ app.modules.target = (function(){
 			console.log($("#"+id));
 		},
 
-		addLink : function(obj){
+		addLink : function(obj,color){
 			var add = true;
 			links.forEach(function(e){
 				if((e.data == obj.data)&&(e.test == obj.test)){
@@ -672,7 +787,7 @@ app.modules.target = (function(){
 				jsPlumb.connect({
 			        source: "p"+obj.test,
 			        target: "p"+obj.data,
-					paintStyle:{ stroke:"black", strokeWidth:5 },
+					paintStyle:{ stroke: color, strokeWidth:5 },
 					endpointStyle:{ stroke:"black" },
 					anchor:["Left", "Right"],
 					detachable: false,
@@ -682,18 +797,18 @@ app.modules.target = (function(){
 		},
 
 		showModal : function(){
-			var id = '#modal';
+			var id = '#modal2';
 			$(id).html('<p id="xmlVersion" wrap="off">Delete this connection ?</p><button class="btn custom btn-default" id="delete">yes</button><button class="btn custom btn-default" id="cancel">cancel</button>');
 
 			// On definit la taille de la fenetre modale
 			app.modules.target.resizeModal();
 
 			// Effet de transition
-			$('#fond').show();
+			$('#fond2').show();
 			// Effet de transition
 			$(id).show();
 
-			$('.popup .close').click(function (e) {
+			$('.popup2 .close').click(function (e) {
 				 // On désactive le comportement du lien
 				 e.preventDefault();
 				 // On cache la fenetre modale
@@ -705,18 +820,18 @@ app.modules.target = (function(){
 
 	 hideModal : function(){
 			// On cache le fond et la fenêtre modale
-			$('#fond, .popup').hide();
-			$('.popup').html('');
+			$('#fond2, .popup2').hide();
+			$('.popup2').html('');
 	 },
 
 	 resizeModal : function(){
-			var modal = $('#modal');
+			var modal = $('#modal2');
 			// On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
 			var winH = $(document).height();
 			var winW = $(window).width();
 
 			// le fond aura la taille de l'écran
-			$('#fond').css({'width':winW,'height':winH});
+			$('#fond2').css({'width':winW,'height':winH});
 
 			// On récupère la hauteur et la largeur de l'écran
 			var winH = $(window).height();
@@ -747,6 +862,46 @@ app.modules.target = (function(){
 		 }
 	 },
 
+	 sugest : function(){
+		 if((test_tree == undefined) || (data_tree == undefined)){
+			 alert("Please import all the data require");
+		 }else{
+			 var data_val = app.modules.target.getVal(data_tree, "");
+			 var test_val = app.modules.target.getVal(test_tree, "");
+			 data_val.forEach(function(e){
+				 if(e.parent != "Object"){
+					 test_val.forEach(function(i){
+						 if(i.parent.toLowerCase().includes(e.parent.toLowerCase())){
+							 var obj = {
+	 						 	 test : i.id,
+	 							 data : e.id
+	 					 	 }
+							 app.modules.target.addLink(obj,"red");
+						 }
+					 });
+				 }
+			 });
+		 }
+	 },
+
+	 getVal : function(t,parent){
+		 var val = [];
+		 t.forEach(function(e){
+			 if((e.type == "value")){
+				 e.parent = parent;
+				 val.push(e);
+			 }else{
+				 if(e.nodes != undefined){
+					 var res = app.modules.target.getVal(e.nodes,e.text);
+					 res.forEach(function(i){
+			 		 	 val.push(i);
+					 });
+				 }
+			 }
+		 });
+		 return val;
+	 },
+
     test : function(){
 			var liste = $('#dataTree').treeview('getSelected');
 		},
@@ -754,15 +909,17 @@ app.modules.target = (function(){
     init : function(){
       newId = sessionStorage.getItem('id');
       if(sessionStorage.getItem('tree') != undefined){
-        test_tree = JSON.parse(sessionStorage.getItem('tree'));
+        test_tree = sessionStorage.getItem('tree');
       }
 			if(sessionStorage.load == 1){
-				app.modules.target.addValue(test_tree);
+				app.modules.target.ODF(test_tree);
 			}
+			$('#sugestion').click(app.modules.target.sugest);
       $('#tree').treeview({data: test_tree});
 			$('#tree').treeview('expandAll');
-      document.getElementById('import').addEventListener('change', app.modules.target.import, false);
-			document.getElementById('json').addEventListener('change', app.modules.target.json, false);
+			app.modules.target.unSelect($('#tree').treeview('getSelected'));
+      document.getElementById('file-1').addEventListener('change', app.modules.target.import, false);
+			document.getElementById('file-2').addEventListener('change', app.modules.target.json, false);
 			$('#tree').on('nodeCollapsed', function(event, data) {
 				app.modules.target.reload();
 			});
