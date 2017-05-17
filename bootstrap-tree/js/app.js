@@ -1,12 +1,26 @@
+//Lavascript file for the step 1
 var app = {
 	modules : {}
 }
 
+//Liste of prefix
+var listPref;
+
+//Module for the O-DF tree
 app.modules.tree = (function(){
+	//Attributes
+
+	//Structure of the tree
 	var test_tree;
+	//Id of the futur new node (I know that Bootstrap Treewiew include id for node but I had to add an other id because I can't access the other one everywhere)
 	var newId = 8;
 	return {
 
+		/*
+			Add a tree to the selected node
+
+			@param : new_tree - new tree to add
+		*/
 		add : function(new_tree){
 			app.modules.tree.nodes(new_tree);
 			var x = $('#tree').treeview('getSelected');
@@ -22,28 +36,14 @@ app.modules.tree = (function(){
 			}
 		},
 
-		addNode : function(){
-			var x = $('#tree').treeview('getSelected');
-			y = x[0];
-			if(y.type != "item"){
-				var newNode = {
-					text: "Node",
-					type: "node",
-					id: newId
-				};
-				newId++;
-				console.log(newId);
-				app.modules.tree.recursiveAdd(test_tree,y.id,newNode);
-				$('#tree').treeview('selectNode', [ y.nodeId, { silent: true } ]);
-				$('#tree').treeview('expandNode', [ y.nodeId, { silent: true } ]);
-			}
-		},
+		/*
+			Delete the nodes attribute of all the node from a tree if nodes is empty
 
+			@param : tab - tree
+		*/
 		nodes : function(tab){
 			tab.forEach(function(e){
-				console.log(e);
 				if((e.nodes == undefined) || (e.nodes.length <= 0)){
-					console.log("yolo");
 					delete e.nodes;
 				}else{
 					app.modules.tree.nodes(e.nodes);
@@ -51,6 +51,11 @@ app.modules.tree = (function(){
 			});
 		},
 
+		/*
+			Change the id attribute of all the node from a tree
+
+			@param : tab - tree
+		*/
 		changeId : function(tab){
 			tab.forEach(function(e){
 				e.id = newId;
@@ -63,23 +68,14 @@ app.modules.tree = (function(){
 			});
 		},
 
-		addItem : function(){
-			var x = $('#tree').treeview('getSelected');
-			y = x[0];
-			if(y.type != "item"){
-				var newItem = {
-					text: "Item",
-					type: "item",
-					id: newId
-				};
-				newId++;
-				console.log(newId);
-				app.modules.tree.recursiveAdd(test_tree,y.id,newItem);
-				$('#tree').treeview('selectNode', [ y.nodeId, { silent: true } ]);
-				$('#tree').treeview('expandNode', [ y.nodeId, { silent: true } ]);
-			}
-		},
+		/*
+			Change the id attribute of all the node from a tree
 
+			@param : t - tree
+			@param : id - id of the node to add
+			@param : obj - tree to add
+			@return : done - if the add is complete
+		*/
 		recursiveAdd : function(t,id,obj){
 			var done = false;
 			var i = 0;
@@ -115,6 +111,9 @@ app.modules.tree = (function(){
 			return false;
 		},
 
+		/*
+			Delete selected node
+		*/
 		del : function(){
 			var x = $('#tree').treeview('getSelected');
 			y = x[0];
@@ -130,6 +129,13 @@ app.modules.tree = (function(){
 			}
 		},
 
+		/*
+			find the rigth node to delete
+
+			@param : t - tree
+			@param : id - id of the node to delete
+			@return : done - if the delete is complete
+		*/
 		recursiveDel : function(t,id){
 			var done = false;
 			var i = 0;
@@ -153,6 +159,9 @@ app.modules.tree = (function(){
 			return false;
 		},
 
+		/*
+			Reload the tree
+		*/
 		reload : function(){
 			var liste = $('#tree').treeview('getExpanded');
 			$('#tree').treeview({data: test_tree});
@@ -162,6 +171,13 @@ app.modules.tree = (function(){
 
 		},
 
+		/*
+			find a node
+
+			@param : t - tree
+			@param : id - id of the node to find
+			@return : res - the node
+		*/
 		find : function(t,id){
 			var i = 0;
 			var res;
@@ -180,19 +196,35 @@ app.modules.tree = (function(){
 			return res;
 		},
 
+		/*
+			Display the selected node (just to test)
+		*/
 		test : function(){
 			var liste = $('#tree').treeview('getSelected');
 			console.log(liste[0]);
 		},
 
+		/*
+			Get the tree
+
+			@return : attribute getTree
+		*/
 		getTree : function(){
 			return test_tree;
 		},
 
+		/*
+			Get the new Id
+
+			@return : attribute newId
+		*/
 		getId : function(){
 			return newId;
 		},
 
+		/*
+			Initialize all the event from the module (launch when the window is load)
+		*/
 		init : function(){
 
 			test_tree = [
@@ -214,12 +246,22 @@ app.modules.tree = (function(){
 	}
 })();
 
+//Module for the Term tree
 app.modules.term = (function(){
+	//Attributes
+	//The strcture of the tree
 	var test_tree;
+	//liste of the nodes to delete (use when you add something to the O-DF tree)
 	var liste_del = [];
+	//Id of the futur new node
 	var newId;
 	return{
 
+		/*
+			Display the childrens nodes of a node (call when you check a node)
+
+			@param : node - the node check
+		*/
 		showChild : function(node){
 			if((node.type == "node")&&(node.nodes == undefined)){
 				var termUrl = node.prop;
@@ -256,9 +298,37 @@ app.modules.term = (function(){
 						function(res){
 							res.results.bindings.forEach(function(e){
 								var res = e.property.value.split("/");
+								var tmp = res[res.length-1].split("#");
+								var nameVal = tmp[tmp.length-1];
+								var prefixVal;
+								var done = false;
+								var y = 0;
+								while((!done)&&(y<listPref.length)){
+									if(e.property.value.includes(listPref[y].vocabURI.value)){
+										prefixVal = listPref[y].vocabPrefix.value;
+										done = true;
+									}else{
+										y++;
+									}
+								}
+								var res2 = e.range.value.split("/");
+								tmp = res2[res2.length-1].split("#");
+								var nameVal = tmp[tmp.length-1];
+								var nameRange = res2[res2.length-1];
+								var prefixRange;
+								done = false;
+								y = 0;
+								while((!done)&&(y<listPref.length)){
+									if(e.range.value.includes(listPref[y].vocabURI.value)){
+										prefixRange = listPref[y].vocabPrefix.value;
+										done = true;
+									}else{
+										y++;
+									}
+								}
 								if(e.range.value == "http://www.w3.org/2000/01/rdf-schema#Literal"){
 									var item = {
-										text: e.property.value +"   "+e.range.value,
+										text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
 										type: "item",
 										name: res[res.length-1],
 										property: e.property.value,
@@ -271,7 +341,7 @@ app.modules.term = (function(){
 									node.nodes.push(item);
 								}else{
 									var n = {
-										text: e.property.value +" "+e.range.value,
+										text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
 										type: "node",
 										prop: e.property.value,
 										id: newId,
@@ -312,6 +382,12 @@ app.modules.term = (function(){
 			}
 		},
 
+		/*
+			Replace a node in the tree
+
+			@param : node - the node to replace in the tree
+			@param : t - the tree
+		*/
 		replace : function(node,t){
 			var done = false;
 			var i = 0;
@@ -329,6 +405,12 @@ app.modules.term = (function(){
 			return done;
 		},
 
+		/*
+			Uncheck the child of a node in a tree
+
+			@param : node - the parent node uncheck
+			@param : tree - the tree
+		*/
 		unCheckChild : function(node,tree){
 			if((node.nodes != undefined)&&(node.nodes != null)){
 				if(tree == "#editTree"){
@@ -368,6 +450,14 @@ app.modules.term = (function(){
 			}
 		},
 
+		/*
+			Find the closest node on the same level or on above level from a node
+
+			@param : node - the node to get the closest neighbour or parent
+			@param : parent - the parent of the node
+			@param : tree - the tree
+			@return : find - if a node have been find
+		*/
 		getCloser : function(node,parent,tree){
 			var find = false;
 			var i = 0;
@@ -387,6 +477,13 @@ app.modules.term = (function(){
 			}
 		},
 
+		/*
+			Check all the parents of a node in a tree
+
+			@param : node - the node to check all it's parent
+			@param : first - the first node who have been check (first time you call the fonction the attribute first is the same that the attribute node and don't change in all the iteration)
+			@param : tree - the tree
+		*/
 		checkParent : function(node,first,tree){
 			$(tree).treeview('checkNode', [ node.nodeId, { silent: true } ]);
 			if((node.parentId != undefined) && (node.parentId != null)){
@@ -399,18 +496,9 @@ app.modules.term = (function(){
 			}
 		},
 
-		check : function(){
-			if(test_tree != undefined){
-				$('#subTree').treeview('checkAll', { silent: true });
-			}
-		},
-
-		unCheck : function(){
-			if(test_tree != undefined){
-				$('#subTree').treeview('uncheckAll', { silent: true });
-			}
-		},
-
+		/*
+			Add all the node check to the selecte node from the Term tree
+		*/
 		add : function(){
 			var x = $('#tree').treeview('getSelected');
 			if((x[0] == undefined) || (x[0].type == "item")){
@@ -431,6 +519,39 @@ app.modules.term = (function(){
 			}
 		},
 
+		/*
+			Add to the liste_del attribute all the node who are not check in the treeview
+
+			@param : tab - the tree
+		*/
+		recursiveAdd : function(tab){
+			var liste = $('#subTree').treeview('getChecked');
+			tab.forEach(function(e){
+				var check = false;
+				var i = 0;
+				while((i < liste.length)&&(!check)){
+					if(liste[i].id == e.id){
+						check = true;
+					}else{
+						i++;
+					}
+				}
+				if(!check){
+					liste_del.push(e.id);
+				}else{
+					if(e.type == "node"){
+						app.modules.term.recursiveAdd(e.nodes);
+					}
+				}
+			});
+		},
+
+		/*
+			Delete the a node from the tree
+
+			@param : t - the tree
+			@param : id - id of the node to delete
+		*/
 		recursiveDel : function(t,id){
 			var done = false;
 			var i = 0;
@@ -451,6 +572,12 @@ app.modules.term = (function(){
 			return false;
 		},
 
+		/*
+			Generate the tree
+
+			@param : tab - the tree to generate
+			@param : term - name of the parent node who is the term itself
+		*/
 		generate : function(tab,term){
 			newId = 0;
 			$('#subTree').treeview('remove');;
@@ -483,9 +610,36 @@ app.modules.term = (function(){
 				var i = 1;
 				tab.forEach(function(e){
 					var res = e.property.value.split("/");
+					var tmp = res[res.length-1].split("#");
+					var nameVal = tmp[tmp.length-1];
+					var prefixVal;
+					var done = false;
+					var y = 0;
+					while((!done)&&(y<listPref.length)){
+						if(e.property.value.includes(listPref[y].vocabURI.value)){
+							prefixVal = listPref[y].vocabPrefix.value;
+							done = true;
+						}else{
+							y++;
+						}
+					}
+					var res2 = e.range.value.split("/");
+					tmp = res2[res2.length-1].split("#");
+					var nameRange = tmp[tmp.length-1];
+					var prefixRange;
+					done = false;
+					y = 0;
+					while((!done)&&(y<listPref.length)){
+						if(e.range.value.includes(listPref[y].vocabURI.value)){
+							prefixRange = listPref[y].vocabPrefix.value;
+							done = true;
+						}else{
+							y++;
+						}
+					}
 					if(e.range.value == "http://www.w3.org/2000/01/rdf-schema#Literal"){
 						var item = {
-							text: e.property.value +"   "+e.range.value,
+							text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+e.property.value + "      " + e.range.value,
 							type: "item",
 							name: res[res.length-1],
 							property: e.property.value,
@@ -497,7 +651,7 @@ app.modules.term = (function(){
 						i++;
 					}else{
 						var node = {
-							text: e.property.value +" "+e.range.value,
+							text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
 							type: "node",
 							prop: e.property.value,
 							id: newId,
@@ -509,7 +663,7 @@ app.modules.term = (function(){
 					}
 				});
 			}
-
+			//refrech the event
 			$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
 			$('#subTree').on('nodeChecked', function(event, data) {
 				app.modules.term.checkParent(data,data,'#subTree');
@@ -519,34 +673,17 @@ app.modules.term = (function(){
 			});
 		},
 
-		recursiveAdd : function(tab){
-			var liste = $('#subTree').treeview('getChecked');
-			tab.forEach(function(e){
-				var check = false;
-				var i = 0;
-				while((i < liste.length)&&(!check)){
-					if(liste[i].id == e.id){
-						check = true;
-					}else{
-						i++;
-					}
-				}
-				if(!check){
-					liste_del.push(e.id);
-				}else{
-					if(e.type == "node"){
-						app.modules.term.recursiveAdd(e.nodes);
-					}
-				}
-			});
-		},
-
+		/*
+			Display the node selected (just use for test)
+		*/
 		test : function(){
 			var liste = $('#subTree').treeview('getSelected');
 			console.log(liste);
 		},
 
-
+		/*
+			Initialize all the event from the module (launch when the window is load)
+		*/
 		init : function(){
 
 			$('#subTree').on('nodeChecked', function(event, data) {
@@ -563,12 +700,20 @@ app.modules.term = (function(){
 	}
 })();
 
-
+//Module for the table of term
 app.modules.table = (function(){
+	//Attribute
+	//Table of the term to display
 	var data;
+	//Array of the term
 	var tab = [];
 	return{
 
+		/*
+			Get informations to generate the Term tree and call the generate function from the term modue with those informations
+
+			@param : term - the selected term
+		*/
 		select : function(term){
 			var termUrl;
 			var prefix;
@@ -618,6 +763,9 @@ app.modules.table = (function(){
 			});
 		},
 
+		/*
+			Get informations from LOV with the val of the search bar in parameter
+		*/
 		search : function(){
 			var param = $('#inputTerm').val();
 			var uri = 'http://lov.okfn.org/dataset/lov/api/v2/term/search?q='+param;
@@ -637,6 +785,9 @@ app.modules.table = (function(){
 			});
 		},
 
+		/*
+			Initialize all the event from the module (launch when the window is load)
+		*/
 		init : function(){
 
 			$('#table').on('click', 'tbody tr', function(event) {
@@ -652,19 +803,31 @@ app.modules.table = (function(){
 
 })();
 
+//Module to convert the tree in xml
 app.modules.convert = (function(){
+	//Attribute
+	//Id of the next object
 	var id = 0;
 	return{
 
+		/*
+			convert the tree in a xml string
+		*/
 		conv : function(){
 			var tree = app.modules.tree.getTree();
-			console.log(tree);
 			var s = app.modules.convert.recursiveConv(tree,0,"");
-			console.log(s);
 			app.modules.convert.showModal(s);
 			id = 0;
 		},
 
+		/*
+			Read every node of the O-DF tree to create the xml string
+
+			@param : t - the tree
+			@param : lvl - the level in the tree
+			@param : s - the actual xml string who have been build
+			@return : s - the xml string
+		*/
 		recursiveConv : function(t,lvl,s){
 			t.forEach(function(e){
 				if(lvl == 0){
@@ -717,6 +880,11 @@ app.modules.convert = (function(){
 			return s;
 		},
 
+		/*
+			Show a modal window with the xml string in it and option to go to step 2 or to download the xml
+
+			@param : s - the xml string
+		*/
 		 showModal : function(s){
 		   var id = '#modal';
 		   $(id).html('<textarea id="xmlVersion" wrap="off">'+s+'</textarea><button class="btn custom2 btn-default" id="dl">download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button><button class="btn custom2 btn-default" id="step2">step2<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="cancel">cancel</button>');
@@ -741,12 +909,18 @@ app.modules.convert = (function(){
 				$('#dl').click(app.modules.convert.saveTextAsFile);
 		},
 
+		/*
+			Hide the modal window
+		*/
 		hideModal : function(){
 		   // On cache le fond et la fenêtre modale
 		   $('#fond, .popup').hide();
 		   $('.popup').html('');
 		},
 
+		/*
+			resize the modal window
+		*/
 		resizeModal : function(){
 		   var modal = $('#modal');
 		   // On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
@@ -763,6 +937,9 @@ app.modules.convert = (function(){
 		   modal.css('left', winW/2 - modal.width()/2);
 		},
 
+		/*
+			Download the xml file
+		*/
 		saveTextAsFile : function(){
     	var textToWrite = $(xmlVersion).val();
     	var textFileAsBlob = new Blob([textToWrite], {type:'text/xml'});
@@ -782,7 +959,7 @@ app.modules.convert = (function(){
         	// Firefox requires the link to be added to the DOM
         	// before it can be clicked.
         	downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
-        	downloadLink.onclick = destroyClickedElement;
+        	//downloadLink.onclick = destroyClickedElement;
         	downloadLink.style.display = "none";
         	document.body.appendChild(downloadLink);
     	}
@@ -790,15 +967,16 @@ app.modules.convert = (function(){
     	downloadLink.click();
 	},
 
+	/*
+		Go to the step2 with the tree O-DF tree that you made in the step 1
+	*/
 	step2 : function(){
 		var id = app.modules.tree.getId();
 		var tree = $('#xmlVersion').val();
 		sessionStorage.id = id;
 		sessionStorage.tree = tree;
 		sessionStorage.load = 1;
-		var link = document.createElement("a");
-		link.href = "view/step2.html";
-		link.click();
+		document.location.href = "view/step2.html";
 	},
 
 		init : function(){
@@ -808,17 +986,24 @@ app.modules.convert = (function(){
 
 })();
 
-
+//Module to edit the O-DF tree
 app.modules.edit = (function(){
+		//Attributes
+		//A part of the O-DF tree to edit
 		var treeEdit;
+		//liste of node to delete
 		var liste_del = [];
 	return{
 
+		/*
+			Show a modal window with the edit tree. The tree edit is the selected node of the O-DF tree. This method delete the node from the O-DF tree to add it later.
+		*/
 		showModal : function(){
 			var selected = $('#tree').treeview('getSelected');
 			if((selected.length == 0) || (selected[0].type == "root")){
 				alert("Please select a valid note to edit");
 			}else{
+				$('#tree').treeview('collapseNode', selected);
 				var treeToModif = app.modules.tree.getTree();
 				treeEdit = [];
 				treeEdit.push(app.modules.tree.find(treeToModif,selected[0].id));
@@ -856,12 +1041,18 @@ app.modules.edit = (function(){
 			}
 	 },
 
+	 /*
+	 	Hide the modal window
+	 */
 	 hideModal : function(){
 			// On cache le fond et la fenêtre modale
 			$('#fond3, .popup3').hide();
 			$('.popup3').html('');
 	 },
 
+	 /*
+	 	Resize the modal window
+	 */
 	 resizeModal : function(){
 			var modal = $('#modal3');
 			// On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
@@ -878,29 +1069,38 @@ app.modules.edit = (function(){
 			modal.css('left', winW/2 - modal.width()/2);
 	 },
 
+	 /*
+	 	Add the edit tree to the O-DF tree
+	 */
 	 add : function(){
 		 var x = $('#tree').treeview('getSelected');
 		 if((x[0] == undefined) || (x[0].type == "item")){
 			 alert("Please select a valid node");
 		 }else{
 			 if($('#editTree').treeview('getChecked').length != 0 ){
+				 console.log(treeEdit);
 				 app.modules.edit.recursiveAdd(treeEdit);
 				 liste_del.forEach(function(e){
 					 app.modules.edit.recursiveDel(treeEdit,e);
 				 });
 				 liste_del = [];
-				 console.log(treeEdit);
 				 app.modules.tree.add(treeEdit);
 				 treeEdit = undefined;
 				 $('#editTree').treeview('remove');
+				 app.modules.edit.hideModal();
 			 }else{
 				 alert("Check a term to add");
 			 }
 		 }
 	 },
 
+	 /*
+	 	Add all the uncheck node to the attribute liste_del
+
+		@param : tab - the tree
+	 */
 	 recursiveAdd : function(tab){
-		 var liste = $('#editTre').treeview('getChecked');
+		 var liste = $('#editTree').treeview('getChecked');
 		 tab.forEach(function(e){
 			 var check = false;
 			 var i = 0;
@@ -914,13 +1114,19 @@ app.modules.edit = (function(){
 			 if(!check){
 				 liste_del.push(e.id);
 			 }else{
-				 if(e.type == "node"){
+				 if(e.nodes != undefined){
 					 app.modules.edit.recursiveAdd(e.nodes);
 				 }
 			 }
 		 });
 	 },
 
+	 /*
+		Delete a node from the tree
+
+		@param : t - the tree
+		@param : id - id of the node to delete
+	 */
 	 recursiveDel : function(t,id){
 		 var done = false;
 		 var i = 0;
@@ -941,13 +1147,16 @@ app.modules.edit = (function(){
 		 return false;
 	 },
 
+	 /*
+	 	Initialize all the events of the module
+	 */
 		init : function(){
 			$('#edit').click(app.modules.edit.showModal);
 		}
 	}
 })();
 
-
+//start all the init function and get the list of prefix from LOV
 $(document).ready(function () {
 	app.modules.edit.init();
 	app.modules.table.init();
@@ -959,5 +1168,26 @@ $(document).ready(function () {
 	});
 	$(window).resize(function () {
     app.modules.convert.resizeModal()
+	});
+	var query = 'PREFIX vann:<http://purl.org/vocab/vann/>'
+							+'PREFIX voaf:<http://purl.org/vocommons/voaf#>'
+
+							+'SELECT DISTINCT ?vocabPrefix ?vocabURI {'
+							+'GRAPH <http://lov.okfn.org/dataset/lov>{'
+							+'?vocabURI a voaf:Vocabulary.'
+							+'?vocabURI vann:preferredNamespacePrefix ?vocabPrefix.'
+							+'}} ORDER BY ?vocabPrefix';
+
+	var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
+
+	var pr = $.ajax({
+		url : uri,
+		type: "GET",
+		dataType: "json",
+		success :
+			function(res){
+				listPref = res.results.bindings;
+				console.log(listPref);
+			}
 	});
 });

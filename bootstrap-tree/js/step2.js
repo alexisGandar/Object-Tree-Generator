@@ -2,6 +2,7 @@ var app = {
 	modules : {}
 }
 
+var listPref;
 
 app.modules.target = (function(){
   var test_tree;
@@ -269,9 +270,37 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
+						var res = pro.split("/");
+						var tmp = res[res.length-1].split("#");
+						var nameVal = tmp[tmp.length-1];
+						var prefixVal;
+						var done = false;
+						var y = 0;
+						while((!done)&&(y<listPref.length)){
+							if(pro.includes(listPref[y].vocabURI.value)){
+								prefixVal = listPref[y].vocabPrefix.value;
+								done = true;
+							}else{
+								y++;
+							}
+						}
+						var res2 = range.split("/");
+						tmp = res2[res2.length-1].split("#");
+						var nameRange = tmp[tmp.length-1];
+						var prefixRange;
+						done = false;
+						y = 0;
+						while((!done)&&(y<listPref.length)){
+							if(range.includes(listPref[y].vocabURI.value)){
+								prefixRange = listPref[y].vocabPrefix.value;
+								done = true;
+							}else{
+								y++;
+							}
+						}
             //range = res[2].slice(2,res[2].length-1);
             var newNode = {
-              text: pro+" "+range,
+              text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
               typeof: range,
               type: "Node",
               property: pro,
@@ -419,11 +448,38 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
-
+						var res = pro.split("/");
+						var tmp = res[res.length-1].split("#");
+						var nameVal = tmp[tmp.length-1];
+						var prefixVal;
+						var done = false;
+						var y = 0;
+						while((!done)&&(y<listPref.length)){
+							if(pro.includes(listPref[y].vocabURI.value)){
+								prefixVal = listPref[y].vocabPrefix.value;
+								done = true;
+							}else{
+								y++;
+							}
+						}
+						var res2 = range.split("/");
+						tmp = res2[res2.length-1].split("#");
+						var nameRange = tmp[tmp.length-1];
+						var prefixRange;
+						done = false;
+						y = 0;
+						while((!done)&&(y<listPref.length)){
+							if(range.includes(listPref[y].vocabURI.value)){
+								prefixRange = listPref[y].vocabPrefix.value;
+								done = true;
+							}else{
+								y++;
+							}
+						}
             //na = res[1].slice(6,res[1].length-1);
             //pro = res[2].slice(10,res[2].length-2);
             var newNode = {
-              text: pro + " "+ range,
+              text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
               name: na,
               type: "item",
 							range : range,
@@ -939,5 +995,29 @@ app.modules.target = (function(){
 
 
 $(document).ready(function () {
+
+	var query = 'PREFIX vann:<http://purl.org/vocab/vann/>'
+							+'PREFIX voaf:<http://purl.org/vocommons/voaf#>'
+
+							+'SELECT DISTINCT ?vocabPrefix ?vocabURI {'
+							+'GRAPH <http://lov.okfn.org/dataset/lov>{'
+							+'?vocabURI a voaf:Vocabulary.'
+							+'?vocabURI vann:preferredNamespacePrefix ?vocabPrefix.'
+							+'}} ORDER BY ?vocabPrefix';
+
+	var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
+
+	var pr = $.ajax({
+		url : uri,
+		type: "GET",
+		dataType: "json",
+		async: false,
+		success :
+			function(res){
+				listPref = res.results.bindings;
+				console.log(listPref);
+			}
+	});
+
   app.modules.target.init();
 });

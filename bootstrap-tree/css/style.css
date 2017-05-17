@@ -185,6 +185,7 @@ content
 }
 
 #objTree{
+  overflow: auto;
   padding-right: 25%;
 }
 
@@ -244,6 +245,7 @@ content
 #tree{
   background-color: white;
   width: 100%;
+  overflow: auto;
 }
 
 .data{
@@ -264,26 +266,18 @@ content
 }
 
 
-#tree::-webkit-scrollbar, #subTree::-webkit-scrollbar, #editTree::-webkit-scrollbar{
+#tree::-webkit-scrollbar, #subTree::-webkit-scrollbar, #editTree::-webkit-scrollbar, #objTree::-webkit-scrollbar{
     width: 12px;
 }
 
-#tree::-webkit-scrollbar-track, #subTree::-webkit-scrollbar-track, #editTree::-webkit-scrollbar-track{
+#tree::-webkit-scrollbar-track, #subTree::-webkit-scrollbar-track, #editTree::-webkit-scrollbar-thumb, #objTree::-webkit-scrollbar-thumb{
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
     border-radius: 10px;
 }
 
-#tree::-webkit-scrollbar-thumb, #subTree::-webkit-scrollbar-thumb, #editTree::-webkit-scrollbar-thumb{
+#tree::-webkit-scrollbar-thumb, #subTree::-webkit-scrollbar-thumb, #editTree::-webkit-scrollbar-thumb, #objTree::-webkit-scrollbar-thumb{
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
-}
-
-.custom{
-  width:50%;
-  height: 40px;
-  border-radius: 0px 0px 0px 0px;
-  -moz-border-radius: 0px 0px 0px 0px;
-  -webkit-border-radius: 0px 0px 0px 0px;
 }
 
 .custom2{
@@ -306,6 +300,16 @@ content
     background-color: #fff;
     border: 1px solid #ddd;
     white-space: nowrap;
+}
+
+.sugest{
+  width: 200px;
+  margin : auto;
+  padding-top: 5%;
+}
+
+#sugestion{
+  width: 100%;
 }
 
 /* ==========================================================================
