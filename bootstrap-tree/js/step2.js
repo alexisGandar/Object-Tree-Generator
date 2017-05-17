@@ -1,54 +1,35 @@
+//Lavascript file for the step 2
 var app = {
 	modules : {}
 }
 
+//Liste of prefix
 var listPref;
 
+//General module of this app
 app.modules.target = (function(){
+	//Attributes
+	//the O-DF tree
   var test_tree;
+	//the Data tree
 	var data_tree;
+	//id of the futur new node
   var newId = 0;
+	//id of the value selected in the data tree
 	var data_selected;
+	//id of the value selected in the O-DF tree
 	var test_selected;
+	//Array of all the link beetween value
 	var links = [];
+	//the connection to delete
 	var conn;
 	return{
-    // addValue : function(t){
-		// 	console.log(t);
-    //   if(t != null){
-    //     t.forEach(function(e) {
-    //       if(e.type == "root"){
-    //         app.modules.target.addValue(e.nodes);
-    //       }else{
-    //         if(e.type == "node"){
-    //           if((e.nodes == undefined) || (e.nodes.length == 0)){
-    //             e.type = "item";
-    //             e.nodes = [
-    //               {
-    //                 text: "Value",
-    //         				type: "value",
-    //         				id: newId,
-    //               }
-    //             ];
-    //             newId++;
-    //           }else{
-    //             app.modules.target.addValue(e.nodes);
-    //           }
-    //         }else{
-    //           e.nodes = [
-    //             {
-    //               text: "Value",
-    //               type: "value",
-    //               id: newId,
-    //             }
-    //           ];
-    //           newId++;
-    //         }
-    //       }
-    //     });
-    //   }
-    // },
 
+		/*
+			Generate the O-DF tree from an xml string
+
+			@param : s - xml String
+		*/
 		ODF : function(s){
 			console.log(s);
 			var res = s.split(">");
@@ -64,12 +45,11 @@ app.modules.target = (function(){
 			app.modules.target.generate(res,test_tree[0]);
 		},
 
-		unSelect : function(list){
-			list.forEach(function(e){
-				$('#tree').treeview('unselectNode', e.nodeId);
-			});
-		},
+		/*
+			Allow to import xml file for the O-DF tree. Open a modal window to allow the user to select a file to import
 
+			@param : evt - event
+		*/
     import : function(evt){
       newId = 0;
       var files = evt.target.files; // FileList object
@@ -110,12 +90,19 @@ app.modules.target = (function(){
         }
     },
 
+		/*
+			Generate the O-DF tree from a root node and an array of stringify
+
+			@param : t - the tree
+			@param : n - the root node
+		*/
     generate : function(t,n){
       var node = [];
       node.push(n);
       t.forEach(function(e){
         var res = e.split(" ");
         var r = res[0].split("\t");
+				//if it's an Object
         if(r[r.length-1] == "<object"){
 					var y = 0;
 					var done = false;
@@ -126,9 +113,11 @@ app.modules.target = (function(){
 							y++;
 						}
 					}
+					//if it's an Object who have for parent the root node
           if(!done){
 						var term;
 						var i = 0;
+						//get the typeof value
 						while((term == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("typeof")){
@@ -181,9 +170,11 @@ app.modules.target = (function(){
             newId++;
             node[node.length-1].nodes.push(newNode);
             node.push(newNode);
-          }else{
+
+          }else{ //if it's an Object in an Object
 						var range;
 						var i = 0;
+						//get the typeof value
 						while((range == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("typeof")){
@@ -228,6 +219,7 @@ app.modules.target = (function(){
 						}
 						i = 0
 						var pro;
+						//get the property value
 						while((pro == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("property")){
@@ -298,7 +290,6 @@ app.modules.target = (function(){
 								y++;
 							}
 						}
-            //range = res[2].slice(2,res[2].length-1);
             var newNode = {
               text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
               typeof: range,
@@ -311,12 +302,13 @@ app.modules.target = (function(){
             node[node.length-1].nodes.push(newNode);
             node.push(newNode);
           }
-        }else{
+        }else{ //if it's an Item
           if(r[r.length-1] == "<infoItem"){
 						var na;
 						var pro;
 						var range;
 						var i = 0;
+						//get the name value
 						while ((i<res.length)&&(na==undefined)) {
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("name")){
@@ -362,6 +354,7 @@ app.modules.target = (function(){
 
 						i=0;
 
+						//get the property value
 						while((i<res.length)&&(pro==undefined)){
 							if(res[i].includes("property")){
 								if(res[i] == ("property")){
@@ -406,6 +399,7 @@ app.modules.target = (function(){
 
 						i = 0;
 
+						//get the range value
 						while((range == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("range")){
@@ -476,8 +470,6 @@ app.modules.target = (function(){
 								y++;
 							}
 						}
-            //na = res[1].slice(6,res[1].length-1);
-            //pro = res[2].slice(10,res[2].length-2);
             var newNode = {
               text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
               name: na,
@@ -505,6 +497,13 @@ app.modules.target = (function(){
       });
     },
 
+		/*
+			Skip the space in a table of string
+
+			@param : i - id of the string
+			@param : res - array of string
+			@return : i
+		*/
 		space : function(i,res){
 			while((res[i] == "")&&(i<res.length)){
 				i++;
@@ -512,6 +511,11 @@ app.modules.target = (function(){
 			return i;
 		},
 
+		/*
+			Allow to import Json file for the data tree. Open a modal window to allow the user to select a file to import
+
+			@param : evt - event
+		*/
 		json : function(evt){
       var files = evt.target.files; // FileList object
 
@@ -555,6 +559,12 @@ app.modules.target = (function(){
         }
 		},
 
+		/*
+			Read a table of char (the json file) and create the data tree from it
+
+			@param : s - Array of char
+			@param : n - Root node
+		*/
 		data : function(s,n){
 			var node = [];
       node.push(n);
@@ -755,6 +765,13 @@ app.modules.target = (function(){
 			};
 		},
 
+		/*
+			Search if a node is in a tree
+
+			@param : tree - the tree
+			@param : id - the id of the node to search
+			@return : find - if the node is contain
+		*/
 		contain : function(tree,id){
 			var find = false;
 			var i = 0;
@@ -771,17 +788,20 @@ app.modules.target = (function(){
 			return find;
 		},
 
+		/*
+			Select the value and call method to create links.
+
+			@param : id - id of the value who have been click
+		*/
 		link : function(id){
 			if(app.modules.target.contain(test_tree,id)){
 				if(test_selected == id){
-					console.log("unselected");
 					app.modules.target.changeColor(id,"selected","round");
 					test_selected = undefined;
 				}else {
 					if(test_selected != undefined){
 						app.modules.target.changeColor(test_selected,"selected","round");
 					}
-					console.log("selected");
 					test_selected = id;
 					$("#"+id).attr("class", "selected");
 					app.modules.target.changeColor(id,"round","selected");
@@ -824,11 +844,24 @@ app.modules.target = (function(){
 			}
 		},
 
+		/*
+			Change the color of a value selector
+
+			@param : id - id of the value
+			@param : old - old class to remove
+			@param : n - new class to add
+		*/
 		changeColor : function(id,old,n){
 			$("#"+id).removeClass( old ).addClass( n );
 			console.log($("#"+id));
 		},
 
+		/*
+			Create a link beetween two value
+
+			@param : obj - object that contains the id of the both value to connect
+			@param : color - the color of the connection
+		*/
 		addLink : function(obj,color){
 			var add = true;
 			links.forEach(function(e){
@@ -852,6 +885,9 @@ app.modules.target = (function(){
 			}
 		},
 
+		/*
+			Show a modal window to delete a link
+		*/
 		showModal : function(){
 			var id = '#modal2';
 			$(id).html('<p id="xmlVersion" wrap="off">Delete this connection ?</p><button class="btn custom btn-default" id="delete">yes</button><button class="btn custom btn-default" id="cancel">cancel</button>');
@@ -874,12 +910,18 @@ app.modules.target = (function(){
 			 $('#delete').click(app.modules.target.delete);
 	 },
 
+	 /*
+	 	Hide the modal window
+	 */
 	 hideModal : function(){
 			// On cache le fond et la fenêtre modale
 			$('#fond2, .popup2').hide();
 			$('.popup2').html('');
 	 },
 
+	 /*
+	 	Resize the modal window
+	 */
 	 resizeModal : function(){
 			var modal = $('#modal2');
 			// On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
@@ -896,8 +938,10 @@ app.modules.target = (function(){
 			modal.css('left', winW/2 - modal.width()/2);
 	 },
 
+	 /*
+	 	Delete the link (the attribute conn)
+	 */
 	 delete : function(){
-		 console.log("bla");
 		 if(conn != undefined){
 			 var find = false;
 			 var i = 0;
@@ -905,7 +949,6 @@ app.modules.target = (function(){
 				 if(("p"+links[i].test == conn.sourceId)&&("p"+links[i].data == conn.targetId)){
 					 find = true;
 					 links.splice(i,1);
-					 console.log(links);
 				 }else{
 					 i++;
 				 }
@@ -918,6 +961,9 @@ app.modules.target = (function(){
 		 }
 	 },
 
+	 /*
+	 	Make sugestion connection in red beetween the both tree
+	 */
 	 sugest : function(){
 		 if((test_tree == undefined) || (data_tree == undefined)){
 			 alert("Please import all the data require");
@@ -940,6 +986,11 @@ app.modules.target = (function(){
 		 }
 	 },
 
+	 /*
+	 	Get all the value of a tree
+
+		@return : val - Array of value
+	 */
 	 getVal : function(t,parent){
 		 var val = [];
 		 t.forEach(function(e){
@@ -958,10 +1009,16 @@ app.modules.target = (function(){
 		 return val;
 	 },
 
+		/*
+			Display the selected node from the data tree
+		*/
     test : function(){
 			var liste = $('#dataTree').treeview('getSelected');
 		},
 
+		/*
+			Initialize all the events of the module and create the O-DF tree if there is one save in the sessionStorage
+		*/
     init : function(){
       newId = sessionStorage.getItem('id');
       if(sessionStorage.getItem('tree') != undefined){
@@ -973,7 +1030,6 @@ app.modules.target = (function(){
 			$('#sugestion').click(app.modules.target.sugest);
       $('#tree').treeview({data: test_tree});
 			$('#tree').treeview('expandAll');
-			app.modules.target.unSelect($('#tree').treeview('getSelected'));
       document.getElementById('file-1').addEventListener('change', app.modules.target.import, false);
 			document.getElementById('file-2').addEventListener('change', app.modules.target.json, false);
 			$('#tree').on('nodeCollapsed', function(event, data) {
@@ -993,7 +1049,7 @@ app.modules.target = (function(){
   }
 })();
 
-
+//launch all the init function of the app and get the list of prefix from LOV
 $(document).ready(function () {
 
 	var query = 'PREFIX vann:<http://purl.org/vocab/vann/>'
