@@ -17,16 +17,22 @@ app.modules.target = (function(){
   var newId = 0;
 	//Array of data tree
 	var listData = [];
+	//Json version of the listData
+	var listJson = [];
 	//id of the current data tree display
 	var dataId;
 	//id of the value selected in the data tree
 	var data_selected;
 	//id of the value selected in the O-DF tree
 	var test_selected;
+	//file selected
+	var file_selected;
 	//Array of all the link beetween value
 	var linksVal = [];
 	//Array of all the link beetween value and id
 	var linksId = [];
+	//True if the list of json is display
+	var listDisplay = false;
 	//the connection to delete
 	var conn;
 	return{
@@ -561,6 +567,7 @@ app.modules.target = (function(){
 							data_selected = undefined;
               var newNode = {
                 text: "Root",
+								file: theFile.name,
                 type: "root",
                 id: newId,
                 nodes: []
@@ -571,6 +578,14 @@ app.modules.target = (function(){
 							listData.push(data_tree);
 							dataId = listData.length-1;
 							console.log(listData);
+							var obj = {
+								name : theFile.name,
+							};
+							listJson.push(obj);
+							$('#table2').bootstrapTable('destroy');
+							$('#table2').bootstrapTable({
+									data: listJson
+							});
               $('#dataTree').treeview({data: data_tree});
 							$('#dataTree').treeview('expandAll');
             };
@@ -580,6 +595,34 @@ app.modules.target = (function(){
           //reader.readAsDataText(f,UTF-8);
           reader.readAsText(f,"UTF-8");
         }
+		},
+
+		/*
+			Select the json file and display it
+
+			@param : file - the name of the json file selected
+		*/
+		select : function(file){
+			var i = 0;
+			var find = false;
+			while((i<listData.length)&&(!find)){
+				if(listData[i][0].file == file){
+					find = true;
+					dataId = i;
+					data_tree = listData[i];
+				}else{
+					i++;
+				}
+			}
+			data_selected = undefined;
+			test_selected = undefined;
+			app.modules.target.deleteAllConn();
+			$('#tree').treeview("remove");
+			$('#tree').treeview({data: test_tree});
+			$('#tree').treeview('expandAll');
+			$('#dataTree').treeview({data: data_tree});
+			$('#dataTree').treeview('expandAll');
+			app.modules.target.reload();
 		},
 
 		/*
@@ -1064,51 +1107,6 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Display the next data tree
-	 */
-	 next : function(){
-		 if((listData != undefined)&&(listData.length > 1)){
-			 app.modules.target.deleteAllConn();
-			 dataId++;
-			 if(dataId == listData.length){
-				 dataId = 0;
-			 }
-			 data_tree = listData[dataId];
-			 console.log(test_tree);
-			 data_selected = undefined;
- 			 test_selected = undefined;
-			 $('#tree').treeview("remove");
-			 $('#tree').treeview({data: test_tree});
-			 $('#tree').treeview('expandAll');
-			 $('#dataTree').treeview({data: data_tree});
-			 $('#dataTree').treeview('expandAll');
-			 app.modules.target.reload();
-		 }
-	 },
-
-	 /*
-	 	Display the next data tree
-	 */
-	 prev : function(){
-		 if((listData != undefined)&&(listData.length > 1)){
-			 app.modules.target.deleteAllConn();
-		 	dataId--;
-		 	if(dataId < 0){
-		 		dataId = listData.length-1;
-		 	}
-		 	data_tree = listData[dataId];
-			console.log(test_tree);
-			data_selected = undefined;
-			test_selected = undefined;
-			$('#tree').treeview({data: test_tree});
-			$('#tree').treeview('expandAll');
-		 	$('#dataTree').treeview({data: data_tree});
-		 	$('#dataTree').treeview('expandAll');
-			app.modules.target.reload();
-		 }
-	 },
-
-	 /*
 	 	Reload all the connection of the current data tree
 	 */
 	 reload : function(){
@@ -1173,8 +1171,25 @@ app.modules.target = (function(){
 		 return val;
 	 },
 
+	 /*
+	 	Delete all the connection of jsPlumb
+	 */
 	 deleteAllConn : function(){
 		jsPlumb.reset();
+	 },
+
+	 /*
+	 	Toggle the display of the list of json file
+	 */
+	 display : function(e){
+		 if(listDisplay){
+		 	$("#table2").hide();
+		 	listDisplay = false;
+		 }else{
+		 	$("#table2").show();
+		 	listDisplay = true;
+		 }
+		 jsPlumb.repaintEverything();
 	 },
 
 		/*
@@ -1195,9 +1210,8 @@ app.modules.target = (function(){
 			if(test_tree != null){
 				app.modules.target.ODF(test_tree);
 			}
+			$('#jsonList').click(app.modules.target.display);
 			$('#sugestion').click(app.modules.target.sugest);
-			$('#next').click(app.modules.target.next);
-			$('#prev').click(app.modules.target.prev);
       $('#tree').treeview({data: test_tree});
 			$('#tree').treeview('expandAll');
       document.getElementById('file-1').addEventListener('change', app.modules.target.import, false);
@@ -1208,6 +1222,17 @@ app.modules.target = (function(){
  			});
 			$( window ).resize(function() {
   			jsPlumb.repaintEverything();
+			});
+			$('#table2').on('click', 'tbody tr', function(event) {
+				if(file_selected != undefined){
+					$(file_selected).css("background-color","white");
+					$(file_selected).css("color","black");
+				}
+				var x = $(this).children()[0].innerHTML;
+				$(this).css("background-color","#428BCA");
+				$(this).css("color","white");
+				file_selected = $(this);
+				app.modules.target.select(x);
 			});
     }
   }
