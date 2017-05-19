@@ -206,12 +206,8 @@ content
 }
 
 .name{
-  display: inline-block;
-}
-
-#objTree{
-  overflow: auto;
   padding-right: 25%;
+  display: inline-block;
 }
 
 #termText{
@@ -296,18 +292,26 @@ content
 }
 
 
-#tree::-webkit-scrollbar, #subTree::-webkit-scrollbar, #editTree::-webkit-scrollbar, #objTree::-webkit-scrollbar{
+#tree::-webkit-scrollbar, #subTree::-webkit-scrollbar, #editTree::-webkit-scrollbar, #dataTree::-webkit-scrollbar{
     width: 12px;
 }
 
-#tree::-webkit-scrollbar-track, #subTree::-webkit-scrollbar-track, #editTree::-webkit-scrollbar-thumb, #objTree::-webkit-scrollbar-thumb{
+#tree::-webkit-scrollbar-track, #subTree::-webkit-scrollbar-track, #editTree::-webkit-scrollbar-thumb, #dataTree::-webkit-scrollbar-thumb{
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
     border-radius: 10px;
 }
 
-#tree::-webkit-scrollbar-thumb, #subTree::-webkit-scrollbar-thumb, #editTree::-webkit-scrollbar-thumb, #objTree::-webkit-scrollbar-thumb{
+#tree::-webkit-scrollbar-thumb, #subTree::-webkit-scrollbar-thumb, #editTree::-webkit-scrollbar-thumb, #dataTree::-webkit-scrollbar-thumb{
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
+}
+
+.custom3{
+  width:50%;
+  height: 40px;
+  border-radius: 0px 0px 0px 0px;
+  -moz-border-radius: 0px 0px 0px 0px;
+  -webkit-border-radius: 0px 0px 0px 0px;
 }
 
 .custom2{
@@ -408,4 +412,12 @@ import
 
 #file-2{
   display: none;
+}
+
+#file-3{
+  display: none;
+}
+
+#file-3-label{
+  float: right;
 }

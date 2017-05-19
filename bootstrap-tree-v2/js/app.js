@@ -1018,7 +1018,6 @@ app.modules.convert = (function(){
 		var tree = $('#xmlVersion').val();
 		sessionStorage.id = id;
 		sessionStorage.tree = tree;
-		sessionStorage.load = 1;
 		document.location.href = "view/step2.html";
 	},
 
