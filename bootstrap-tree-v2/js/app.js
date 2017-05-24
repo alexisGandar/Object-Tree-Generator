@@ -46,6 +46,7 @@ app.modules.tree = (function(){
 				var n = {
 					text: $("#inputCustom").val(),
 					type: "node",
+					score: -1, // when you create a custom node the score is -1
 					prop: undefined,
 					id: 0,
 					typeof: $("#inputCustom").val(),
@@ -338,6 +339,8 @@ app.modules.term = (function(){
 	var liste_del = [];
 	//Id of the futur new node
 	var newId;
+	//score of the main term
+	var score;
 	return{
 
 		/*
@@ -412,6 +415,7 @@ app.modules.term = (function(){
 								var n = {
 									text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
 									type: "node",
+									score: score,
 									prop: e.property.value,
 									id: newId,
 									typeof: e.range.value,
@@ -649,8 +653,9 @@ app.modules.term = (function(){
 			@param : tab - the tree to generate
 			@param : term - name of the parent node who is the term itself
 		*/
-		generate : function(tab,term){
+		generate : function(tab,term,s){
 			newId = 0;
+			score = s;
 			$('#subTree').treeview('remove');;
 			test_tree = [];
 			var t;
@@ -660,6 +665,7 @@ app.modules.term = (function(){
 				text: term,
 				type: t,
 				id: newId,
+				score: score,
 				typeof: term,
 				nodes: []
 			}
@@ -702,6 +708,7 @@ app.modules.term = (function(){
 					var node = {
 						text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
 						type: "node",
+						score: score,
 						prop: e.property.value,
 						id: newId,
 						typeof: e.range.value,
@@ -753,7 +760,7 @@ app.modules.table = (function(){
 	//Attribute
 	//Table of the term to display
 	var data;
-	//Array of the term
+	//Array of the terms
 	var tab = [];
 	return{
 
@@ -762,7 +769,7 @@ app.modules.table = (function(){
 
 			@param : term - the selected term
 		*/
-		select : function(term){
+		select : function(term,score){
 			var termUrl;
 			var prefix;
 			var name;
@@ -806,7 +813,7 @@ app.modules.table = (function(){
 				success :
 					function(res){
 						console.log(res.results.bindings);
-						app.modules.term.generate(res.results.bindings,term);
+						app.modules.term.generate(res.results.bindings,term,score);
 					}
 			});
 		},
@@ -840,8 +847,8 @@ app.modules.table = (function(){
 
 			$('#table').on('click', 'tbody tr', function(event) {
 				var x = $(this).children()[0].innerHTML;
-				console.log(x);
-				app.modules.table.select(x);
+				var y = $(this).children()[1].innerHTML;
+				app.modules.table.select(x,y);
 			});
 
 			$('#submitTerm').click(app.modules.table.search);
@@ -888,14 +895,14 @@ app.modules.convert = (function(){
 					}
 					if(e.nodes != undefined){
 						if(lvl == 1){
-							s = s + '\t<object typeof ="'+e.typeof+'">' + "\n";
+							s = s + '\t<object typeof ="'+e.typeof+'" score ="'+e.score+'">' + "\n";
 						}else{
 							var i = 0;
 							while(i<lvl){
 								i++;
 								s = s + "\t";
 							}
-							s = s + '<object typeof ="'+e.typeof+'" property="'+e.prop+'" range="'+e.typeof+'">' + "\n";
+							s = s + '<object typeof ="'+e.typeof+'" property="'+e.prop+'" range="'+e.typeof+'" score ="'+e.score+'">' + "\n";
 						}
 						var i = 0;
 						while(i<lvl){
@@ -916,7 +923,7 @@ app.modules.convert = (function(){
 							i++;
 							s = s + "\t";
 						}
-						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'" range="'+e.range+'">' + "\n";
+						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'" range="'+e.range+'" score ="'+e.score+'">' + "\n";
 					}
 				}
 			});
@@ -930,7 +937,7 @@ app.modules.convert = (function(){
 		*/
 		 showModal : function(s){
 		   var id = '#modal';
-		   $(id).html('<textarea id="xmlVersion" wrap="off">'+s+'</textarea><button class="btn custom2 btn-default" id="dl">download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button><button class="btn custom2 btn-default" id="step2">step2<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="cancel">cancel</button>');
+		   $(id).html('<textarea id="xmlVersion" wrap="off">'+s+'</textarea><button class="btn custom2 btn-default" id="dl">Download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button><button class="btn custom2 btn-default" id="step2">Step2<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="cancel">Cancel</button>');
 
 		   // On definit la taille de la fenetre modale
 		   app.modules.convert.resizeModal();

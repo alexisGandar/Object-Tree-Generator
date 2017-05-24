@@ -9,12 +9,16 @@ var listPref;
 //General module of this app
 app.modules.target = (function(){
 	//Attributes
+	//xml file of the O-DF tree
+	var xml;
 	//the O-DF tree
   var test_tree;
 	//the Data tree
 	var data_tree;
 	//id of the futur new node
   var newId = 0;
+	//list of all the file
+	var jsonFileList = [];
 	//Array of data tree
 	var listData = [];
 	//Json version of the listData
@@ -27,10 +31,20 @@ app.modules.target = (function(){
 	var test_selected;
 	//file selected
 	var file_selected;
-	//Array of all the link beetween value
+	//Array of all the links beetween value
 	var linksVal = [];
-	//Array of all the link beetween value and id
+	//Array of all the links beetween value and id
 	var linksId = [];
+	//Array of all the links
+	var links = [];
+	//Id of the current connection read (use in export)
+	var exportId;
+	//the connexion export
+	var exportJson = {};
+	//Mapping of all the mapping
+	var idMapping;
+	//the current object to add in the exportJson
+	var currentObj;
 	//True if the list of json is display
 	var listDisplay = false;
 	//the connection to delete
@@ -43,13 +57,15 @@ app.modules.target = (function(){
 			@param : s - xml String
 		*/
 		ODF : function(s){
+			xml = s;
+			newId = 0;
 			console.log(s);
 			var res = s.split(">");
 			test_tree = [];
 			var newNode = {
 				text: "Root",
 				type: "root",
-				id: newId,
+				id: "ODF"+newId,
 				nodes: []
 			};
 			newId++;
@@ -76,6 +92,7 @@ app.modules.target = (function(){
             return function(e) {
 							app.modules.target.deleteAllConn();
               // Print the contents of the file
+							xml = e.target.result;
               var res = e.target.result.split(">");
 							console.log(res);
 							linksId = [];
@@ -176,16 +193,62 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
+
+						var score;
+						//get the score
+						while((score == undefined)&&(i<res.length)){
+							i = app.modules.target.space(i,res);
+							if(res[i].includes("score")){
+								if(res[i] == "score"){
+									i++;
+									i = app.modules.target.space(i,res);
+									if(res[i] == "="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											score = res[i].slice(1,res[i].length-2);
+										}else{
+											score = res[i].slice(1,res[i].length-1);
+										}
+									}else{
+										if(res[i].includes(">")){
+											score = res[i].slice(2,res[i].length-2);
+										}else{
+											score = res[i].slice(2,res[i].length-1);
+										}
+									}
+								}else{
+									if(res[i] == "score="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											score = res[i].slice(1,res[i].length-2);
+										}else{
+											score = res[i].slice(1,res[i].length-1);
+										}
+									}else {
+										if(res[i].includes(">")){
+											score = res[i].slice(7,res[i].length-2);
+										}else{
+											score = res[i].slice(7,res[i].length-1);
+										}
+									}
+								}
+							}else{
+								i++;
+							}
+						}
             var newNode = {
               text: term,
               typeof: term,
               type: "Node",
-              id: newId,
+							score: score,
+              id: "ODF"+newId,
               nodes: [
 								{
-									text: "Placeholder_value",
+									text: "Object_Id",
 		              type: "id",
-		              id: newId+1,
+		              id: "ODF"+(newId+1),
 								}
 							]
             };
@@ -285,6 +348,52 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
+
+						var score;
+						//get the score
+						while((score == undefined)&&(i<res.length)){
+							i = app.modules.target.space(i,res);
+							if(res[i].includes("score")){
+								if(res[i] == "score"){
+									i++;
+									i = app.modules.target.space(i,res);
+									if(res[i] == "="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											score = res[i].slice(1,res[i].length-2);
+										}else{
+											score = res[i].slice(1,res[i].length-1);
+										}
+									}else{
+										if(res[i].includes(">")){
+											score = res[i].slice(2,res[i].length-2);
+										}else{
+											score = res[i].slice(2,res[i].length-1);
+										}
+									}
+								}else{
+									if(res[i] == "score="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											score = res[i].slice(1,res[i].length-2);
+										}else{
+											score = res[i].slice(1,res[i].length-1);
+										}
+									}else {
+										if(res[i].includes(">")){
+											score = res[i].slice(7,res[i].length-2);
+										}else{
+											score = res[i].slice(7,res[i].length-1);
+										}
+									}
+								}
+							}else{
+								i++;
+							}
+						}
+
 						var res = pro.split("/");
 						var tmp = res[res.length-1].split("#");
 						var nameVal = tmp[tmp.length-1];
@@ -315,15 +424,16 @@ app.modules.target = (function(){
 						}
             var newNode = {
               text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
-              typeof: range,
+							score: score,
+							typeof: range,
               type: "Node",
               property: pro,
-              id: newId,
+              id: "ODF"+newId,
               nodes: [
 								{
-									text: "Placeholder_value",
+									text: "Object_Id",
 		              type: "id",
-		              id: newId+1,
+		              id: "ODF"+(newId+1),
 								}
 							]
             };
@@ -472,6 +582,52 @@ app.modules.target = (function(){
 								i++;
 							}
 						}
+
+						var score;
+						//get the score
+						while((score == undefined)&&(i<res.length)){
+							i = app.modules.target.space(i,res);
+							if(res[i].includes("score")){
+								if(res[i] == "score"){
+									i++;
+									i = app.modules.target.space(i,res);
+									if(res[i] == "="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											score = res[i].slice(1,res[i].length-2);
+										}else{
+											score = res[i].slice(1,res[i].length-1);
+										}
+									}else{
+										if(res[i].includes(">")){
+											score = res[i].slice(2,res[i].length-2);
+										}else{
+											score = res[i].slice(2,res[i].length-1);
+										}
+									}
+								}else{
+									if(res[i] == "score="){
+										i++;
+										i = app.modules.target.space(i,res);
+										if(res[i].includes(">")){
+											score = res[i].slice(1,res[i].length-2);
+										}else{
+											score = res[i].slice(1,res[i].length-1);
+										}
+									}else {
+										if(res[i].includes(">")){
+											score = res[i].slice(7,res[i].length-2);
+										}else{
+											score = res[i].slice(7,res[i].length-1);
+										}
+									}
+								}
+							}else{
+								i++;
+							}
+						}
+
 						var res = pro.split("/");
 						var tmp = res[res.length-1].split("#");
 						var nameVal = tmp[tmp.length-1];
@@ -502,16 +658,17 @@ app.modules.target = (function(){
 						}
             var newNode = {
               text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
-              name: na,
+							score: score,
+							name: na,
               type: "item",
 							range : range,
               property: pro,
-              id: newId,
+              id: "ODF"+newId,
               nodes: [
                 {
-                  text: "Value",
+                  text: "Item_Value",
             			type: "value",
-            			id: newId+1,
+            			id: "ODF"+(newId+1),
                 }
               ]
             };
@@ -557,27 +714,33 @@ app.modules.target = (function(){
           // Closure to capture the file information.
           reader.onload = (function(theFile) {
             return function(e) {
+							newId = 0;
+							var x = listData.length;
+							var prefixId = "JS"+x;
 							app.modules.target.deleteAllConn();
               // Print the contents of the file
-							console.log(JSON.parse(e.target.result));
 							var res = e.target.result;
+							var file = {
+								name: theFile.name,
+								data: res,
+							}
+							jsonFileList.push(file);
+
 							res = e.target.result.slice(1,e.target.result.length);
-							console.log(res);
 							data_tree = [];
 							data_selected = undefined;
               var newNode = {
                 text: "Root",
 								file: theFile.name,
                 type: "root",
-                id: newId,
+                id: prefixId + newId,
                 nodes: []
               };
               newId++;
               data_tree.push(newNode);
-							app.modules.target.data(res,data_tree[0]);
+							app.modules.target.data(res,data_tree[0],prefixId);
 							listData.push(data_tree);
 							dataId = listData.length-1;
-							console.log(listData);
 							var obj = {
 								name : theFile.name,
 							};
@@ -631,7 +794,7 @@ app.modules.target = (function(){
 			@param : s - Array of char
 			@param : n - Root node
 		*/
-		data : function(s,n){
+		data : function(s,n,prefixId){
 			var node = [];
       node.push(n);
 			var name = "";
@@ -650,7 +813,7 @@ app.modules.target = (function(){
 								typeof: name,
 								type: "Node",
 								property: "",
-								id: newId,
+								id: prefixId + newId,
 								nodes: []
 							};
 							newId++;
@@ -662,7 +825,7 @@ app.modules.target = (function(){
 								type: "Node",
 								pop : true,
 								property: "",
-								id: newId,
+								id: prefixId + newId,
 								nodes: []
 							};
 						}else{
@@ -671,7 +834,7 @@ app.modules.target = (function(){
 								typeof: "Object",
 								type: "Node",
 								property: "",
-								id: newId,
+								id: prefixId + newId,
 								nodes: []
 							};
 						}
@@ -689,14 +852,14 @@ app.modules.target = (function(){
 								name: name,
 								type: "item",
 								property: name,
-								id: newId,
+								id: prefixId + newId,
 								nodes: [
 									{
 										text: value,
 										type: "value",
 										tree: "data",
 										value: value,
-										id: newId+1,
+										id: prefixId + (newId+1),
 									}
 								]
 							};
@@ -723,7 +886,7 @@ app.modules.target = (function(){
 								typeof: "Array",
 								type: "array",
 								property: "",
-								id: newId,
+								id: prefixId + newId,
 								nodes: []
 							};
 						}else {
@@ -732,7 +895,7 @@ app.modules.target = (function(){
 								typeof: "Array",
 								type: "array",
 								property: "",
-								id: newId,
+								id: prefixId + newId,
 								nodes: []
 							};
 						}
@@ -750,7 +913,7 @@ app.modules.target = (function(){
 								type: "value",
 								tree: "data",
 								value: value,
-								id: newId
+								id: prefixId + newId
 							};
 							newId++;
 							node[node.length-1].nodes.push(newNode);
@@ -763,7 +926,7 @@ app.modules.target = (function(){
 								type: "value",
 								tree: "data",
 								value: name,
-								id: newId,
+								id: prefixId + newId,
 							}
 							newId++;
 							node[node.length-1].nodes.push(newNode);
@@ -779,14 +942,14 @@ app.modules.target = (function(){
 								name: name,
 								type: "item",
 								property: name,
-								id: newId,
+								id: prefixId + newId,
 								nodes: [
 									{
 										text: value,
 										type: "value",
 										tree: "data",
 										value: value,
-										id: newId+1,
+										id: prefixId + (newId+1),
 									}
 								]
 							};
@@ -802,7 +965,7 @@ app.modules.target = (function(){
 									type: "value",
 									tree: "data",
 									value: name,
-									id: newId,
+									id: prefixId + newId,
 								}
 								newId++;
 								node[node.length-1].nodes.push(newNode);
@@ -1176,6 +1339,10 @@ app.modules.target = (function(){
 	 */
 	 deleteAllConn : function(){
 		jsPlumb.reset();
+		jsPlumb.bind('click', function (connection, e) {
+			conn = connection;
+			app.modules.target.showModal();
+		});
 	 },
 
 	 /*
@@ -1192,11 +1359,310 @@ app.modules.target = (function(){
 		 jsPlumb.repaintEverything();
 	 },
 
+	 /*
+		 Show a modal window to export the mappings
+	 */
+	 export : function(){
+		 if(linksVal.length == 0){
+			 alert('No connection detected');
+		 }else{
+			 idMapping = undefined;
+		   exportJson = {};
+			 exportJson.result = [];
+		   var currentObj = undefined;
+			 exportId = 0;
+			 links = linksVal.concat(linksId);
+			 app.modules.target.next();
+			 //$(id).html('<button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
+
+			 // On definit la taille de la fenetre modale
+			 app.modules.target.resizeExport();
+
+			 // Effet de transition
+			 $('#fond').show();
+			 // Effet de transition
+			 $('#modal').show();
+
+			 $('.popup .close').click(function (e) {
+					// On désactive le comportement du lien
+					e.preventDefault();
+					// On cache la fenetre modale
+					app.modules.target.hideExport();
+				});
+		 }
+	},
+
+	/*
+	 Hide the modal window of the export
+	*/
+	hideExport : function(){
+		 // On cache le fond et la fenêtre modale
+		 $('#fond, .popup').hide();
+		 $('.popup').html('');
+	},
+
+	/*
+	 Resize the modal window of the export
+	*/
+	resizeExport : function(){
+		 var modal = $('#modal');
+		 // On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+		 var winH = $(document).height();
+		 var winW = $(window).width();
+
+		 // le fond aura la taille de l'écran
+		 $('#fond').css({'width':winW,'height':winH});
+
+		 // On récupère la hauteur et la largeur de l'écran
+		 var winH = $(window).height();
+		 // On met la fenêtre modale au centre de l'écran
+		 modal.css('top', winH/2 - modal.height()/2);
+		 modal.css('left', winW/2 - modal.width()/2);
+	},
+
+	/*
+		Display the next connection in the modal
+	*/
+	next : function(){
+		var b = true;
+		if(exportId != 0){
+			if($('#xmlVersion').val() == ""){
+				b = false;
+				alert('please fill the text area');
+			}else{
+				currentObj.function = $('#xmlVersion').val();
+				exportJson.result.push(currentObj);
+				currentObj = undefined;
+			}
+		}
+		if(b){
+			if(links.length>0){
+				var i = 0;
+				var json = [];
+				var JsonId = [];
+				var current = links[0].test;
+				while(i<links.length){
+					if(links[i].test == current){
+						json.push(links[i]);
+						JsonId.push(links[i].data);
+						links.splice(i,1);
+					}else{
+						i++;
+					}
+				}
+				var score = [];
+				var parentODF = "";
+				var parentPath = "";
+				var parentJson = [];
+				var listNodeTree = $('#tree').treeview('getEnabled');
+				var listNodeData = [];
+				var tmp;
+				listData.forEach(function(e){
+					$('#invisibleTree').treeview({data: e});
+					$('#invisibleTree').treeview("expandAll");
+					listNodeData = listNodeData.concat($('#invisibleTree').treeview('getEnabled'));
+				});
+				i=0;
+				while((i<listNodeTree.length)){
+					if(listNodeTree[i].id == json[0].test){
+						var n;
+						parentPath = listNodeTree[i].text;
+						n = $('#tree').treeview('getParent', listNodeTree[i].nodeId);
+						if(n.type == "item"){
+							tmp = n.property + " " + n.range;
+						}else{
+							tmp = n.typeof;
+						}
+						score.push({value: n.score,name: tmp});
+						parentODF = n.text;
+						parentPath = tmp + "\\" + parentPath;
+						while(($('#tree').treeview('getParent', n.nodeId)).type != "root"){
+							n = $('#tree').treeview('getParent', n.nodeId);
+							score.push({value: n.score,
+															name: tmp});
+							if(n.type == "item"){
+								tmp = n.property + " " + n.range;
+							}else{
+								tmp = n.typeof;
+							}
+							parentPath = tmp + "\\" + parentPath;
+							parentODF = n.text + " - " + parentODF;
+						}
+						parentODF = "root" + " - " + parentODF;
+						parentPath = "root" + "\\" + parentPath;
+					}
+					i++;
+				}
+
+				listNodeData.forEach(function(e){
+					json.forEach(function(d){
+						if(d.data == e.id){
+							var idTree = e.id.charAt(2);
+							$('#invisibleTree').treeview({data: listData[idTree]});
+							var p = $('#invisibleTree').treeview('getParent', e.nodeId)
+							while(p.text == "Object"){
+								p = $('#invisibleTree').treeview('getParent', p.nodeId)
+							}
+
+							parentJson.push({
+								id: d.data,
+								parent: p.text
+							});
+						}
+					});
+				});
+
+				var map = "";
+				if(idMapping == undefined){
+					listNodeData.forEach(function(e){
+						if(e.type != "root"){
+							var idTree = e.id.charAt(2);
+							$('#invisibleTree').treeview({data: listData[idTree]});
+							var m = e.text;
+							var n = $('#invisibleTree').treeview('getParent', e.nodeId);
+							if(n.type != "root"){
+								m =  n.text + "\\" + m;
+								while(($('#invisibleTree').treeview('getParent', n.nodeId)).type != "root"){
+									n = $('#invisibleTree').treeview('getParent', n.nodeId);
+									m = n.text + "\\" + m;
+								}
+							}
+
+							m = "root" + "\\" + m + ":" + e.id + "---";
+							map = map + m;
+						}
+					});
+
+					listNodeTree.forEach(function(e){
+						if(e.type != "root"){
+							var n = $('#tree').treeview('getParent', e.nodeId);
+							if(e.type == "item"){
+								tmp = e.property + " " + e.range;
+							}else{
+								if((e.type == "value")||(e.type == "id")){
+									tmp = e.text;
+								}else{
+									tmp = e.typeof;
+								}
+							}
+							var m = tmp;
+							if(n.type != "root"){
+								if(n.type == "item"){
+									tmp = n.property + " " + n.range;
+								}else{
+									if((n.type == "value")||(n.type == "id")){
+										tmp = n.text;
+									}else{
+										tmp = n.typeof;
+									}
+								}
+								m = tmp + "\\" + m;
+								while(($('#tree').treeview('getParent', n.nodeId)).type != "root"){
+									n = $('#tree').treeview('getParent', n.nodeId);3
+									if(n.type == "item"){
+										tmp = n.property + " " + n.range;
+									}else{
+										if((n.type == "value")||(n.type == "id")){
+											tmp = n.text;
+										}else{
+											tmp = n.typeof;
+										}
+									}
+									m = tmp + "\\" + m;
+								}
+							}
+
+							m = "root" + "\\" + m + ":" + e.id + "---";
+							map = map + m;
+						}
+					});
+					idMapping = map;
+				}
+
+				i = 0;
+				var s = "";
+				while(i<JsonId.length){
+					s = s + JsonId[i] + " ";
+					i++;
+				}
+				currentObj = {
+					odfId: json[0].test,
+					path: parentPath,
+					score: score,
+					json: s,
+				}
+				var string = "input : <br>";
+				console.log(parentJson);
+				parentJson.forEach(function (e){
+					string = string + e.parent + " => id : <button id=b" + e.id + ">" + e.id + "</button> --- ";
+				});
+				string = string.slice(0, string.length-5);
+				var obj = links[exportId];
+				var id = '#modal';
+				if(parentJson.length == 1){
+					console.log(parentJson[0]);
+					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div><textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="xmlVersion" wrap="off">'+parentJson[0].id+'</textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
+				}else{
+					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div><textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="xmlVersion" wrap="off"></textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
+				}
+				parentJson.forEach(function (e){
+					$('#b'+e.id).click(function(){
+						console.log("fzefzef");
+						$('#xmlVersion').val($('#xmlVersion').val() + e.id);
+					});
+				});
+				$('#cancel').click(app.modules.target.hideExport);
+				$('#next').click(app.modules.target.next);
+			}else{
+				console.log("fini");
+				console.log(exportJson);
+				var string = JSON.stringify(exportJson);
+				var id = '#modal';
+				$(id).html('<textarea id="xmlVersion" readonly="readonly" wrap="off">'+string+'</textarea><button class="btn custom2 btn-default" id="cancel">Cancel</button><button class="btn custom2 btn-default" id="step3">Step 3<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="dl">Download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>');
+				$('#cancel').click(app.modules.target.hideExport);
+				$('#dl').click(app.modules.target.download);
+				$('#step3').click(app.modules.target.step3);
+			}
+			exportId++;
+		}
+	},
+
+	/*
+
+	*/
+	download : function (){
+		var zip = new JSZip();
+		console.log(jsonFileList);
+		jsonFileList.forEach(function(e){
+			zip.file("data/"+e.name, e.data);
+		});
+		console.log(exportJson);
+		console.log(idMapping);
+		zip.file("idMapping.txt", idMapping);
+		zip.file("data/O-DF.xml", xml);
+		var obj = JSON.stringify(exportJson);
+		zip.file("Mappings.json", obj);
+
+		zip.generateAsync({type:"blob"})
+		.then(function (blob) {
+    saveAs(blob, "data.zip");
+});
+	},
+
+	/*
+
+	*/
+	step3 : function (){
+
+	},
 		/*
-			Display the selected node from the data tree
+			Use for test
 		*/
     test : function(){
-			var liste = $('#dataTree').treeview('getSelected');
+			var liste = $('#dataTree').treeview('getEnabled');
+			liste.forEach(function(e){
+				console.log(e);
+			});
 		},
 
 		/*
@@ -1212,6 +1678,7 @@ app.modules.target = (function(){
 			}
 			$('#jsonList').click(app.modules.target.display);
 			$('#sugestion').click(app.modules.target.sugest);
+			$('#export').click(app.modules.target.export);
       $('#tree').treeview({data: test_tree});
 			$('#tree').treeview('expandAll');
       document.getElementById('file-1').addEventListener('change', app.modules.target.import, false);
