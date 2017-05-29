@@ -739,8 +739,9 @@ app.modules.target = (function(){
               newId++;
               data_tree.push(newNode);
 							app.modules.target.data(res,data_tree[0],prefixId);
-							listData.push(data_tree);
-							dataId = listData.length-1;
+							app.modules.target.chooseStructure(data_tree);
+							//listData.push(data_tree);
+							//dataId = listData.length-1;
 							var obj = {
 								name : theFile.name,
 							};
@@ -749,8 +750,7 @@ app.modules.target = (function(){
 							$('#table2').bootstrapTable({
 									data: listJson
 							});
-              $('#dataTree').treeview({data: data_tree});
-							$('#dataTree').treeview('expandAll');
+
             };
           })(f);
 
@@ -761,15 +761,121 @@ app.modules.target = (function(){
 		},
 
 		/*
+			Show a modal window where the user can select the part of the data tree to show
+
+			@param : tree - tree to display
+		*/
+		chooseStructure : function(tree){
+			var id = '#modal';
+			$(id).html('<h4>Please check the node of the structure</h4><div id="chooseTree"></div>');
+			$('#chooseTree').treeview({data: tree[0].nodes,showCheckbox: true});
+			$('#chooseTree').treeview('expandAll');
+			$('#chooseTree').on('nodeChecked', function(event, data) {
+			 	app.modules.target.add(data);
+		 	});
+			// On definit la taille de la fenetre modale
+			app.modules.target.resizeChoose();
+
+			// Effet de transition
+			$('#fond').fadeIn(1000);
+			$('#fond').fadeTo("slow",0.8);
+			// Effet de transition
+			$(id).fadeIn(2000);
+
+			$('.popup .close').click(function (e) {
+				 // On désactive le comportement du lien
+				 e.preventDefault();
+				 // On cache la fenetre modale
+				 app.modules.target.hideModal();
+			 });
+		},
+
+		/*
+			Create the data tree with the check node
+
+			@param : node - the check node
+		*/
+		add : function(node){
+			n = {
+				text : "Root",
+				type : "root",
+				id: 0,
+				nodes:[]
+			}
+			n.nodes.push(node);
+			var x = listData.length;
+			var prefixId = "JS"+x;
+			app.modules.target.changeId(n.nodes,1,prefixId);
+			dataTree = [];
+			console.log(n);
+			dataTree.push(n);
+			listData.push([n]);
+			console.log(listData);
+			dataId = listData.length-1;
+			$('#dataTree').treeview({data: dataTree});
+			$('#dataTree').treeview('expandAll');
+			app.modules.target.hideChoose();
+		},
+
+		/*
+			Change the id attribute of all the node from a tree
+
+			@param : tab - tree
+		*/
+		changeId : function(tab,id,prefixId){
+			tab.forEach(function(e){
+				console.log(id);
+				e.id = prefixId+id;
+				id++;
+				if(e.tree == "choose"){
+					e.tree = "data";
+				}
+				if(e.nodes != undefined){
+					id = app.modules.target.changeId(e.nodes,id,prefixId);
+				}
+			});
+			return id;
+		},
+
+		/*
+			Hide the modal window
+		*/
+		hideChoose : function(){
+		   // On cache le fond et la fenêtre modale
+		   $('#fond, .popup').hide();
+		   $('.popup').html('');
+		},
+
+		/*
+			resize the modal window
+		*/
+		resizeChoose : function(){
+		   var modal = $('#modal');
+		   // On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+		   var winH = $(document).height();
+		   var winW = $(window).width();
+
+		   // le fond aura la taille de l'écran
+		   $('#fond').css({'width':winW,'height':winH});
+
+		   // On récupère la hauteur et la largeur de l'écran
+		   var winH = $(window).height();
+		   // On met la fenêtre modale au centre de l'écran
+		   modal.css('top', winH/2 - modal.height()/2);
+		   modal.css('left', winW/2 - modal.width()/2);
+		},
+
+		/*
 			Select the json file and display it
 
 			@param : file - the name of the json file selected
 		*/
 		select : function(file){
+			console.log(listData);
 			var i = 0;
 			var find = false;
-			while((i<listData.length)&&(!find)){
-				if(listData[i][0].file == file){
+			while((i<listJson.length)&&(!find)){
+				if(listJson[i].name == file){
 					find = true;
 					dataId = i;
 					data_tree = listData[i];
@@ -857,7 +963,7 @@ app.modules.target = (function(){
 									{
 										text: value,
 										type: "value",
-										tree: "data",
+										tree: "choose",
 										value: value,
 										id: prefixId + (newId+1),
 									}
@@ -911,7 +1017,7 @@ app.modules.target = (function(){
 							var newNode = {
 								text: "empty",
 								type: "value",
-								tree: "data",
+								tree: "choose",
 								value: value,
 								id: prefixId + newId
 							};
@@ -924,7 +1030,7 @@ app.modules.target = (function(){
 							var newNode = {
 								text: name,
 								type: "value",
-								tree: "data",
+								tree: "choose",
 								value: name,
 								id: prefixId + newId,
 							}
@@ -947,7 +1053,7 @@ app.modules.target = (function(){
 									{
 										text: value,
 										type: "value",
-										tree: "data",
+										tree: "choose",
 										value: value,
 										id: prefixId + (newId+1),
 									}
@@ -963,7 +1069,7 @@ app.modules.target = (function(){
 								var newNode = {
 									text: name,
 									type: "value",
-									tree: "data",
+									tree: "choose",
 									value: name,
 									id: prefixId + newId,
 								}
@@ -1632,12 +1738,16 @@ app.modules.target = (function(){
 	*/
 	download : function (){
 		var zip = new JSZip();
-		console.log(jsonFileList);
+		var jsonName;
 		jsonFileList.forEach(function(e){
 			zip.file("data/"+e.name, e.data);
+			if(jsonName == undefined){
+				jsonName = e.name;
+			}else{
+				jsonName = jsonName + " " + e.name;
+			}
 		});
-		console.log(exportJson);
-		console.log(idMapping);
+		zip.file("json_name.txt", jsonName);
 		zip.file("idMapping.txt", idMapping);
 		zip.file("data/O-DF.xml", xml);
 		var obj = JSON.stringify(exportJson);
@@ -1650,10 +1760,42 @@ app.modules.target = (function(){
 	},
 
 	/*
-
+		Go to the step 3 with the connection create in the step 2
 	*/
 	step3 : function (){
+		var zip = new JSZip();
+		var JsonFiles = [];
+		jsonFileList.forEach(function(e){
+			zip.file("data/"+e.name, e.data);
+			var o = {
+				name: "data/"+e.name,
+				code: e.data
+			}
+			JsonFiles.push(o);
+		});
+		sessionStorage.jsonFiles = JSON.stringify(JsonFiles);
+		zip.file("idMapping.txt", idMapping);
+		var o = {
+			name: "idMapping.txt",
+			code: idMapping
+		}
+		sessionStorage.idMapping = JSON.stringify(o);
+		zip.file("data/O-DF.xml", xml);
+		var o = {
+			name: "data/O-DF.xml",
+			code: xml
+		}
+		sessionStorage.xml =  JSON.stringify(o);
+		var obj = JSON.stringify(exportJson);
+		zip.file("Mappings.json", obj);
+		var o = {
+			name: "Mappings.json",
+			code: obj
+		}
+		sessionStorage.Mappings =  JSON.stringify(o);
+		console.log(zip);
 
+		document.location.href = "step3.html";
 	},
 		/*
 			Use for test

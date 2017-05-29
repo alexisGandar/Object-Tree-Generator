@@ -522,15 +522,18 @@
 				.attr('data-nodeid', node.nodeId)
 				.attr('style', _this.buildStyleOverride(node));
 
-			if((node.type == "value")||(node.type == "id")){
-				if(node.tree != "data" ){
-					var button = "<div onclick='app.modules.target.link(this.id)' class='round' id='"+node.id+"'></div>";
-					treeItem.append(button);
-				}else{
-					var button = "<div onclick='app.modules.target.link(this.id)' class='round rigth' id='"+node.id+"'></div>";
-					treeItem.append(button);
+			if(node.tree != "choose"){
+				if((node.type == "value")||(node.type == "id")){
+					if(node.tree != "data" ){
+						var button = "<div onclick='app.modules.target.link(this.id)' class='round' id='"+node.id+"'></div>";
+						treeItem.append(button);
+					}else{
+						var button = "<div onclick='app.modules.target.link(this.id)' class='round rigth' id='"+node.id+"'></div>";
+						treeItem.append(button);
+					}
 				}
 			}
+
 
 
 			// Add indent/spacer to mimic tree structure

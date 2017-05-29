@@ -172,6 +172,12 @@ Modal
   height:70%;
 }
 
+#chooseTree{
+  width:100%;
+  height:400px;
+  overflow: auto;
+}
+
 .idName{
   width:100%;
   height: 50px;
@@ -302,16 +308,16 @@ content
 }
 
 
-#tree::-webkit-scrollbar, #subTree::-webkit-scrollbar, #editTree::-webkit-scrollbar, #dataTree::-webkit-scrollbar{
+#tree::-webkit-scrollbar, #subTree::-webkit-scrollbar, #editTree::-webkit-scrollbar, #dataTree::-webkit-scrollbar, #chooseTree::-webkit-scrollbar{
     width: 12px;
 }
 
-#tree::-webkit-scrollbar-track, #subTree::-webkit-scrollbar-track, #editTree::-webkit-scrollbar-thumb, #dataTree::-webkit-scrollbar-thumb{
+#tree::-webkit-scrollbar-track, #subTree::-webkit-scrollbar-track, #editTree::-webkit-scrollbar-thumb, #dataTree::-webkit-scrollbar-thumb, #chooseTree::-webkit-scrollbar-thumb{
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
     border-radius: 10px;
 }
 
-#tree::-webkit-scrollbar-thumb, #subTree::-webkit-scrollbar-thumb, #editTree::-webkit-scrollbar-thumb, #dataTree::-webkit-scrollbar-thumb{
+#tree::-webkit-scrollbar-thumb, #subTree::-webkit-scrollbar-thumb, #editTree::-webkit-scrollbar-thumb, #dataTree::-webkit-scrollbar-thumb, #chooseTree::-webkit-scrollbar-thumb{
     border-radius: 10px;
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5);
 }
@@ -373,6 +379,11 @@ content
 #sugestion{
   width: 100%;
 }
+
+#import{
+  width: 100%;
+}
+
 
 #export{
   width: 100%;
