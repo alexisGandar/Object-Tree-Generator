@@ -41,10 +41,12 @@ app.modules.target = (function(){
 	var exportId;
 	//the connexion export
 	var exportJson = {};
-	//Mapping of all the mapping
-	var idMapping;
 	//the current object to add in the exportJson
 	var currentObj;
+	//the current id use in the export function with their path
+	var idPath = [];
+	//id of the current json value use in the currentObj
+	var currentJson = [];
 	//True if the list of json is display
 	var listDisplay = false;
 	//the connection to delete
@@ -824,7 +826,6 @@ app.modules.target = (function(){
 		*/
 		changeId : function(tab,id,prefixId){
 			tab.forEach(function(e){
-				console.log(id);
 				e.id = prefixId+id;
 				id++;
 				if(e.tree == "choose"){
@@ -1085,11 +1086,13 @@ app.modules.target = (function(){
 						switchNV = true;
 						break;
 	    		default:
-	        	if((s[i] != "'")&&(s[i] != '"')&&(s[i] != '[')){
-							if(!switchNV){
-								name = name + s[i];
-							}else{
-								value = value + s[i];
+						if((s[i] != "'")&&(s[i] != '"')&&(s[i] != '[')&&(s[i] != '\n')&&(s[i] != '\t')&&(s[i] != '\r')&&(s[i] != '\b')){
+							if((s[i] != '\f')){
+								if(!switchNV){
+									name = name + s[i];
+								}else{
+									value = value + s[i];
+								}
 							}
 						}
 					}
@@ -1472,7 +1475,6 @@ app.modules.target = (function(){
 		 if(linksVal.length == 0){
 			 alert('No connection detected');
 		 }else{
-			 idMapping = undefined;
 		   exportJson = {};
 			 exportJson.result = [];
 		   var currentObj = undefined;
@@ -1532,13 +1534,38 @@ app.modules.target = (function(){
 	next : function(){
 		var b = true;
 		if(exportId != 0){
-			if($('#xmlVersion').val() == ""){
+			if($('#function').val() == ""){
 				b = false;
 				alert('please fill the text area');
 			}else{
-				currentObj.function = $('#xmlVersion').val();
+				var f = $('#function').val();
+				currentJson.forEach(function(e){
+					var find = false;
+					var p;
+					var y = 0;
+					while(!find){
+						if(idPath[y].id == e.id){
+							find = true
+							p = idPath[y].path;
+						}else{
+							y++;
+						}
+					}
+					var res = f.split(e.id);
+					f = "";
+					y = 0;
+					while(y < res.length){
+					res[y] = res[y] + "("+p+")";
+					f = f + res[y];
+						y++;
+					}
+					var slice = f.length - p.length - 2;
+					f = f.slice(0,slice);
+				});
+				currentObj.function = f;
 				exportJson.result.push(currentObj);
 				currentObj = undefined;
+				idPath = [];
 			}
 		}
 		if(b){
@@ -1618,79 +1645,48 @@ app.modules.target = (function(){
 					});
 				});
 
-				var map = "";
-				if(idMapping == undefined){
-					listNodeData.forEach(function(e){
-						if(e.type != "root"){
-							var idTree = e.id.charAt(2);
-							$('#invisibleTree').treeview({data: listData[idTree]});
-							var m = e.text;
-							var n = $('#invisibleTree').treeview('getParent', e.nodeId);
-							if(n.type != "root"){
-								m =  n.text + "\\" + m;
-								while(($('#invisibleTree').treeview('getParent', n.nodeId)).type != "root"){
-									n = $('#invisibleTree').treeview('getParent', n.nodeId);
-									m = n.text + "\\" + m;
-								}
-							}
+				var s = [];
 
-							m = "root" + "\\" + m + ":" + e.id + "---";
-							map = map + m;
+				JsonId.forEach(function(e){
+					var find3 = false;
+					i = 0;
+					var node;
+					while((!find3)&&(i<listNodeData.length)){
+						if(listNodeData[i].id == e){
+							node = listNodeData[i];
+							find3 = true;
+						}else{
+							i++;
 						}
-					});
-
-					listNodeTree.forEach(function(e){
-						if(e.type != "root"){
-							var n = $('#tree').treeview('getParent', e.nodeId);
-							if(e.type == "item"){
-								tmp = e.property + " " + e.range;
+					}
+					var idTree = node.id.charAt(2);
+					$('#invisibleTree').treeview({data: listData[idTree]});
+					var parent = $('#invisibleTree').treeview('getParent', node.nodeId);
+					var path = "";
+					if(parent.type == "array"){
+						var y = 0;
+						var find2 = false;
+						while((!find2)&&(y<parent.nodes.length)){
+							if(parent.nodes[y].id == node.id){
+								find2 = true;
 							}else{
-								if((e.type == "value")||(e.type == "id")){
-									tmp = e.text;
-								}else{
-									tmp = e.typeof;
-								}
+								y++;
 							}
-							var m = tmp;
-							if(n.type != "root"){
-								if(n.type == "item"){
-									tmp = n.property + " " + n.range;
-								}else{
-									if((n.type == "value")||(n.type == "id")){
-										tmp = n.text;
-									}else{
-										tmp = n.typeof;
-									}
-								}
-								m = tmp + "\\" + m;
-								while(($('#tree').treeview('getParent', n.nodeId)).type != "root"){
-									n = $('#tree').treeview('getParent', n.nodeId);3
-									if(n.type == "item"){
-										tmp = n.property + " " + n.range;
-									}else{
-										if((n.type == "value")||(n.type == "id")){
-											tmp = n.text;
-										}else{
-											tmp = n.typeof;
-										}
-									}
-									m = tmp + "\\" + m;
-								}
-							}
-
-							m = "root" + "\\" + m + ":" + e.id + "---";
-							map = map + m;
 						}
-					});
-					idMapping = map;
-				}
+						path = path + y;
+					}else{
+						path = path + "0";
+					}
+					path = parent.text + "\\" + path;
+					while(($('#invisibleTree').treeview('getParent', parent.nodeId)).type != "root"){
+						parent = $('#invisibleTree').treeview('getParent', parent.nodeId);
+						path = parent.text + "\\" + path;
+					}
+					path = "root\\"+path;
+					idPath.push({id:e, path: path});
+					s.push(path);
+				});
 
-				i = 0;
-				var s = "";
-				while(i<JsonId.length){
-					s = s + JsonId[i] + " ";
-					i++;
-				}
 				currentObj = {
 					odfId: json[0].test,
 					path: parentPath,
@@ -1698,24 +1694,39 @@ app.modules.target = (function(){
 					json: s,
 				}
 				var string = "input : <br>";
-				console.log(parentJson);
+				currentJson = parentJson;
 				parentJson.forEach(function (e){
 					string = string + e.parent + " => id : <button id=b" + e.id + ">" + e.id + "</button> --- ";
 				});
 				string = string.slice(0, string.length-5);
 				var obj = links[exportId];
 				var id = '#modal';
+				var operation = "<div class='operationBox'><button class='operation' id='bPlus'>+</button><button class='operation' id='bMoins'>-</button><button class='operation' id='bMult'>*</button><button class='operation' id='bDiv'>/</button><button class='operation' id='bConcat'>Concat</div>"
 				if(parentJson.length == 1){
 					console.log(parentJson[0]);
-					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div><textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="xmlVersion" wrap="off">'+parentJson[0].id+'</textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
+					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div>'+operation+'<textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="function" wrap="off">'+parentJson[0].id+'</textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
 				}else{
-					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div><textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="xmlVersion" wrap="off"></textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
+					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div>'+operation+'<textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="function" wrap="off"></textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
 				}
 				parentJson.forEach(function (e){
 					$('#b'+e.id).click(function(){
-						console.log("fzefzef");
-						$('#xmlVersion').val($('#xmlVersion').val() + e.id);
+						$('#function').val($('#function').val() + e.id);
 					});
+				});
+				$('#bPlus').click(function(){
+					$('#function').val($('#function').val()+"+");
+				});
+				$('#bMoins').click(function(){
+					$('#function').val($('#function').val()+"-");
+				});
+				$('#bMult').click(function(){
+					$('#function').val($('#function').val()+"*");
+				});
+				$('#bDiv').click(function(){
+					$('#function').val($('#function').val()+"/");
+				});
+				$('#bConcat').click(function(){
+					$('#function').val($('#function').val()+"Concat");
 				});
 				$('#cancel').click(app.modules.target.hideExport);
 				$('#next').click(app.modules.target.next);
@@ -1724,7 +1735,7 @@ app.modules.target = (function(){
 				console.log(exportJson);
 				var string = JSON.stringify(exportJson);
 				var id = '#modal';
-				$(id).html('<textarea id="xmlVersion" readonly="readonly" wrap="off">'+string+'</textarea><button class="btn custom2 btn-default" id="cancel">Cancel</button><button class="btn custom2 btn-default" id="step3">Step 3<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="dl">Download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>');
+				$(id).html('<textarea id="function" readonly="readonly" wrap="off">'+string+'</textarea><button class="btn custom2 btn-default" id="cancel">Cancel</button><button class="btn custom2 btn-default" id="step3">Step 3<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="dl">Download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>');
 				$('#cancel').click(app.modules.target.hideExport);
 				$('#dl').click(app.modules.target.download);
 				$('#step3').click(app.modules.target.step3);
@@ -1748,7 +1759,6 @@ app.modules.target = (function(){
 			}
 		});
 		zip.file("json_name.txt", jsonName);
-		zip.file("idMapping.txt", idMapping);
 		zip.file("data/O-DF.xml", xml);
 		var obj = JSON.stringify(exportJson);
 		zip.file("Mappings.json", obj);
@@ -1774,12 +1784,6 @@ app.modules.target = (function(){
 			JsonFiles.push(o);
 		});
 		sessionStorage.jsonFiles = JSON.stringify(JsonFiles);
-		zip.file("idMapping.txt", idMapping);
-		var o = {
-			name: "idMapping.txt",
-			code: idMapping
-		}
-		sessionStorage.idMapping = JSON.stringify(o);
 		zip.file("data/O-DF.xml", xml);
 		var o = {
 			name: "data/O-DF.xml",
@@ -1842,6 +1846,13 @@ app.modules.target = (function(){
 				$(this).css("color","white");
 				file_selected = $(this);
 				app.modules.target.select(x);
+			});
+			$("#step3").click(function(){
+				if(linksVal[0] != undefined){
+					app.modules.target.export();
+				}else{
+					document.location.href = "step3.html";
+				}
 			});
     }
   }

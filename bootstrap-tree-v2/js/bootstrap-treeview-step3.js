@@ -336,12 +336,12 @@
 		else {
 
 			if (node.selectable) {
-				//this.toggleSelectedState(node, _default.options);
+				this.toggleSelectedState(node, _default.options);
 			} else {
 				this.toggleExpandedState(node, _default.options);
 			}
 
-			//this.render();
+			this.render();
 		}
 	};
 
@@ -393,9 +393,8 @@
 	};
 
 	Tree.prototype.toggleSelectedState = function (node, options) {
-		//if (!node) return;
-		//this.setSelectedState(node, !node.state.selected, options);
-		return;
+		if (!node) return;
+		this.setSelectedState(node, !node.state.selected, options);
 	};
 
 	Tree.prototype.setSelectedState = function (node, state, options) {
@@ -512,7 +511,6 @@
 		var _this = this;
 		$.each(nodes, function addNodes(id, node) {
 
-
 			var treeItem = $(_this.template.item)
 				.addClass('node-' + _this.elementId)
 				.addClass(node.state.checked ? 'node-checked' : '')
@@ -522,32 +520,24 @@
 				.attr('data-nodeid', node.nodeId)
 				.attr('style', _this.buildStyleOverride(node));
 
-			if(node.tree != "choose"){
-				console.log(node.type);
-				var button;
-				if((node.type == "root")||(node.type == "Node")){
-					button = "<span class='glyphicon glyphicon-folder-open' aria-hidden='true'></span>";
-				}else{
-					if((node.type == "value")||(node.type == "id")){
-						if(node.tree != "data" ){
-							button = "<div onclick='app.modules.target.link(this.id)' class='round' id='"+node.id+"'></div>";
-							treeItem.append(button);
-						}else{
-							button = "<div onclick='app.modules.target.link(this.id)' class='round rigth' id='"+node.id+"'></div>";
-						}
+
+				if(node.tree == "odf"){
+					console.log(node.type);
+					var button;
+					if((node.type == "root")||(node.type == "Node")){
+						button = "<span class='glyphicon glyphicon-folder-open' aria-hidden='true'></span>";
+					}else{
 						if(node.type == 'id'){
 							button = button + "<span class='glyphicon glyphicon-barcode' aria-hidden='true'></span>"
+						}else{
+							button = "<span class='glyphicon glyphicon-apple' aria-hidden='true'></span>";
 						}
-					}else{
-						button = "<span class='glyphicon glyphicon-apple' aria-hidden='true'></span>";
+
 					}
-
+					if(button != undefined){
+						treeItem.append(button);
+					}
 				}
-				if(button != undefined){
-					treeItem.append(button);
-				}
-			}
-
 
 
 			// Add indent/spacer to mimic tree structure
@@ -557,23 +547,23 @@
 
 			// Add expand, collapse or empty spacer icons
 			var classList = [];
-			// if (node.nodes) {
-			// 	classList.push('expand-icon');
-			// 	if (node.state.expanded) {
-			// 		classList.push(_this.options.collapseIcon);
-			// 	}
-			// 	else {
-			// 		classList.push(_this.options.expandIcon);
-			// 	}
-			// }
-			// else {
-			// 	classList.push(_this.options.emptyIcon);
-			// }
-			//
-			// treeItem
-			// 	.append($(_this.template.icon)
-			// 		.addClass(classList.join(' '))
-			// 	);
+			if (node.nodes) {
+				classList.push('expand-icon');
+				if (node.state.expanded) {
+					classList.push(_this.options.collapseIcon);
+				}
+				else {
+					classList.push(_this.options.expandIcon);
+				}
+			}
+			else {
+				classList.push(_this.options.emptyIcon);
+			}
+
+			treeItem
+				.append($(_this.template.icon)
+					.addClass(classList.join(' '))
+				);
 
 
 			// Add node icon
@@ -596,19 +586,20 @@
 
 			// Add check / unchecked icon
 			if (_this.options.showCheckbox) {
+				if((node.type == "root")){
+					var classList = ['check-icon'];
+					if (node.state.checked) {
+						classList.push(_this.options.checkedIcon);
+					}
+					else {
+						classList.push(_this.options.uncheckedIcon);
+					}
 
-				var classList = ['check-icon'];
-				if (node.state.checked) {
-					classList.push(_this.options.checkedIcon);
+					treeItem
+						.append($(_this.template.icon)
+							.addClass(classList.join(' '))
+						);
 				}
-				else {
-					classList.push(_this.options.uncheckedIcon);
-				}
-
-				treeItem
-					.append($(_this.template.icon)
-						.addClass(classList.join(' '))
-					);
 			}
 
 			// Add text
@@ -832,11 +823,11 @@
 		@param {optional Object} options
 	*/
 	Tree.prototype.selectNode = function (identifiers, options) {
-		//this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
-		//	this.setSelectedState(node, true, options);
-		//}, this));
+		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+			this.setSelectedState(node, true, options);
+		}, this));
 
-		//this.render();
+		this.render();
 	};
 
 	/**
@@ -845,11 +836,11 @@
 		@param {optional Object} options
 	*/
 	Tree.prototype.unselectNode = function (identifiers, options) {
-		//this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
-		//	this.setSelectedState(node, false, options);
-		//}, this));
+		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+			this.setSelectedState(node, false, options);
+		}, this));
 
-		//this.render();
+		this.render();
 	};
 
 	/**
@@ -858,11 +849,11 @@
 		@param {optional Object} options
 	*/
 	Tree.prototype.toggleNodeSelected = function (identifiers, options) {
-		//this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
-		//	this.toggleSelectedState(node, options);
-		//}, this));
+		this.forEachIdentifier(identifiers, options, $.proxy(function (node, options) {
+			this.toggleSelectedState(node, options);
+		}, this));
 
-		//this.render();
+		this.render();
 	};
 
 

@@ -325,6 +325,13 @@ app.modules.tree = (function(){
 			$("#addI").click(app.modules.tree.addItem);
 			$("#del").click(app.modules.tree.del);
 			$("#customTerm").click(app.modules.tree.showModal);
+			$("#step2").click(function(){
+				if(test_tree[0].nodes[0] != undefined){
+					app.modules.convert.conv();
+				}else{
+					document.location.href = "view/step2.html";
+				}
+			});
 
 		}
 	}
@@ -350,6 +357,14 @@ app.modules.term = (function(){
 		*/
 		showChild : function(node){
 			if((node.type == "node")&&(node.nodes == undefined)){
+				var newN ={
+					type:"node",
+					text:node.text,
+					id: node.id,
+					prop:node.prop,
+					score: node.score,
+					typeof:node.typeof
+				}
 				var termUrl = node.prop;
 				var done = false;
 				while(!done){
@@ -360,8 +375,6 @@ app.modules.term = (function(){
 					}
 				}
 
-				console.log(termUrl);
-				console.log(node.typeof);
 
 				var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
 
@@ -421,14 +434,16 @@ app.modules.term = (function(){
 									typeof: e.range.value,
 								}
 								newId++;
-								if(node.nodes==undefined){
-									node.nodes = [];
+								if(newN.nodes==undefined){
+									newN.nodes = [];
 								}
-								node.nodes.unshift(n);
+								newN.nodes.push(n);
 							});
+
 							var check = $('#subTree').treeview('getChecked');
 							var expand = $('#subTree').treeview('getExpanded');
-							app.modules.term.replace(node,test_tree);
+							console.log(check);
+							app.modules.term.replace(newN,test_tree);
 							console.log(test_tree);
 							$('#subTree').treeview('remove');
 							$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
@@ -440,6 +455,7 @@ app.modules.term = (function(){
 								$('#subTree').treeview('checkNode',e.nodeId);
 							});
 							expand.forEach(function(e){
+
 								$('#subTree').treeview('expandNode',e.nodeId);
 							});
 							$('#subTree').on('nodeChecked', function(event, data) {
@@ -494,6 +510,7 @@ app.modules.term = (function(){
 					});
 				}else{
 					var checked = $(tree).treeview('getChecked');
+					console.log(checked);
 					if(node.parentId != undefined){
 						var parent = $(tree).treeview('getNode', node.parentId);
 						var id = app.modules.term.getCloser(node,parent,tree);
@@ -519,6 +536,14 @@ app.modules.term = (function(){
 						});
 					}
 				}
+			}
+			if((node.nodes != undefined)&&(node.nodes != null)){
+				node.nodes.forEach(function(e){
+					$(tree).treeview('uncheckNode', [ e.nodeId, { silent: true } ]);
+					if((e.nodes != undefined)&&(e.nodes != null)){
+						app.modules.term.unCheckChild(e,tree);
+					}
+				});
 			}
 		},
 
@@ -909,7 +934,7 @@ app.modules.convert = (function(){
 							i++;
 							s = s + "\t";
 						}
-						s = s +'\t<id>Placeholder_value</id>'  + "\n";
+						s = s +'\t<id>Placeholder_value</id>' + "\n";
 						s = app.modules.convert.recursiveConv(e.nodes,lvl+1,s);
 						i = 0;
 						while(i<lvl){
@@ -923,7 +948,7 @@ app.modules.convert = (function(){
 							i++;
 							s = s + "\t";
 						}
-						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'" range="'+e.range+'" score ="'+e.score+'">' + "\n";
+						s = s + '<infoItem name="'+e.name+'" property="'+e.property+'" range="'+e.range+'" score ="'+e.score+'"></infoItem>' + "\n";
 					}
 				}
 			});

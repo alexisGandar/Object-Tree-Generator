@@ -166,6 +166,13 @@ Modal
   resize: none;
 }
 
+#function{
+  display: block;
+  width:100%;
+  height:45%;
+  resize: none;
+}
+
 #editTree{
   display: block;
   width:100%;
@@ -178,10 +185,33 @@ Modal
   overflow: auto;
 }
 
+#instructionExport3{
+  text-align: center;
+  padding-top: 15%;
+  padding-bottom: 20%;
+}
+
+#instructionExport31{
+  text-align: center;
+  padding-top: 5%;
+  padding-bottom: 5%;
+}
+
 .idName{
   width:100%;
-  height: 50px;
+  height: 60px;
   overflow: auto;
+}
+
+.operationBox{
+  margin-top: 10px;
+  margin-bottom: 10px
+}
+
+.operation{
+  width: 10%;
+  margin-left: 5%;
+  margin-right: 5%;
 }
 
 /* ==========================================================================
@@ -412,7 +442,7 @@ search bar
 }
 
 /* ==========================================================================
-select div
+select div and glyphicon
 ========================================================================== */
 
 .round{
@@ -442,6 +472,10 @@ select div
   float: right;
 }
 
+.glyphicon-barcode{
+  margin-left: 30px;
+}
+
 /* ==========================================================================
 import
 ========================================================================== */
@@ -459,5 +493,9 @@ import
 }
 
 #file-3-label{
+  float: right;
+}
+
+.rigthfloat{
   float: right;
 }
