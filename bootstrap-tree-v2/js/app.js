@@ -388,7 +388,7 @@ app.modules.term = (function(){
 					+'}'
 					+' UNION '
 					+'{'
-					+'?property schema:domainIncludes <'+node.typeof+'>.'
+					+'?property schema:domain <'+node.typeof+'>.'
 					+'?property schema:rangeIncludes ?range.'
 					+'}'
 					+'}'
@@ -434,7 +434,9 @@ app.modules.term = (function(){
 									}
 								}
 								var n = {
+//									text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
 									text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
+
 									type: "node",
 									score: score,
 									prop: e.property.value,

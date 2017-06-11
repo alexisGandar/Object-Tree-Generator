@@ -3,61 +3,61 @@ var app = {
 	modules : {}
 }
 
-//Liste of prefix
+// Liste of prefix
 var listPref;
 
-//General module of this app
+// General module of this app
 app.modules.target = (function(){
-	//Attributes
-	//xml file of the O-DF tree
+	// Attributes
+	// xml file of the O-DF tree
 	var xml;
-	//the O-DF tree
+	// the O-DF tree
   var test_tree;
-	//the Data tree
+	// the Data tree
 	var data_tree;
-	//id of the futur new node
+	// id of the futur new node
   var newId = 0;
-	//list of all the file
+	// list of all the file
 	var jsonFileList = [];
-	//Array of data tree
+	// Array of data tree
 	var listData = [];
-	//Json version of the listData
+	// Json version of the listData
 	var listJson = [];
-	//id of the current data tree display
+	// id of the current data tree display
 	var dataId;
-	//id of the value selected in the data tree
+	// id of the value selected in the data tree
 	var data_selected;
-	//id of the value selected in the O-DF tree
+	// id of the value selected in the O-DF tree
 	var test_selected;
-	//file selected
+	// file selected
 	var file_selected;
-	//Array of all the links beetween value
+	// Array of all the links beetween value
 	var linksVal = [];
-	//Array of all the links beetween value and id
+	// Array of all the links beetween value and id
 	var linksId = [];
-	//Array of all the links
+	// Array of all the links
 	var links = [];
-	//Id of the current connection read (use in export)
+	// Id of the current connection read (use in export)
 	var exportId;
-	//the connexion export
+	// the connexion export
 	var exportJson = {};
-	//the current object to add in the exportJson
+	// the current object to add in the exportJson
 	var currentObj;
-	//the current id use in the export function with their path
+	// the current id use in the export function with their path
 	var idPath = [];
-	//id of the current json value use in the currentObj
+	// id of the current json value use in the currentObj
 	var currentJson = [];
-	//True if the list of json is display
+	// True if the list of json is display
 	var listDisplay = false;
-	//the connection to delete
+	// the connection to delete
 	var conn;
 	return{
 
 		/*
-			Generate the O-DF tree from an xml string
-
-			@param : s - xml String
-		*/
+		 * Generate the O-DF tree from an xml string
+		 * 
+		 * @param : s - xml String
+		 */
 		ODF : function(s){
 			xml = s;
 			newId = 0;
@@ -76,10 +76,11 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Allow to import xml file for the O-DF tree. Open a modal window to allow the user to select a file to import
-
-			@param : evt - event
-		*/
+		 * Allow to import xml file for the O-DF tree. Open a modal window to
+		 * allow the user to select a file to import
+		 * 
+		 * @param : evt - event
+		 */
     import : function(evt){
       newId = 0;
       var files = evt.target.files; // FileList object
@@ -120,24 +121,23 @@ app.modules.target = (function(){
           })(f);
 
           // Read in the file
-          //reader.readAsDataText(f,UTF-8);
+          // reader.readAsDataText(f,UTF-8);
           reader.readAsText(f,"UTF-8");
         }
     },
 
 		/*
-			Generate the O-DF tree from a root node and an array of stringify
-
-			@param : t - the tree
-			@param : n - the root node
-		*/
+		 * Generate the O-DF tree from a root node and an array of stringify
+		 * 
+		 * @param : t - the tree @param : n - the root node
+		 */
     generate : function(t,n){
       var node = [];
       node.push(n);
       t.forEach(function(e){
         var res = e.split(" ");
         var r = res[0].split("\t");
-				//if it's an Object
+				// if it's an Object
         if(r[r.length-1] == "<object"){
 					var y = 0;
 					var done = false;
@@ -148,11 +148,11 @@ app.modules.target = (function(){
 							y++;
 						}
 					}
-					//if it's an Object who have for parent the root node
+					// if it's an Object who have for parent the root node
           if(!done){
 						var term;
 						var i = 0;
-						//get the typeof value
+						// get the typeof value
 						while((term == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("typeof")){
@@ -197,7 +197,7 @@ app.modules.target = (function(){
 						}
 
 						var score;
-						//get the score
+						// get the score
 						while((score == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("score")){
@@ -259,10 +259,10 @@ app.modules.target = (function(){
             node[node.length-1].nodes.push(newNode);
             node.push(newNode);
 
-          }else{ //if it's an Object in an Object
+          }else{ // if it's an Object in an Object
 						var range;
 						var i = 0;
-						//get the typeof value
+						// get the typeof value
 						while((range == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("typeof")){
@@ -307,7 +307,7 @@ app.modules.target = (function(){
 						}
 						i = 0
 						var pro;
-						//get the property value
+						// get the property value
 						while((pro == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("property")){
@@ -352,7 +352,7 @@ app.modules.target = (function(){
 						}
 
 						var score;
-						//get the score
+						// get the score
 						while((score == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("score")){
@@ -425,7 +425,10 @@ app.modules.target = (function(){
 							}
 						}
             var newNode = {
-              text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
+// text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"
+//      "+ pro+"      "+range,
+			  text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ pro + "\t" + range +"</span>",
+
 							score: score,
 							typeof: range,
               type: "Node",
@@ -444,13 +447,13 @@ app.modules.target = (function(){
             node[node.length-1].nodes.push(newNode);
             node.push(newNode);
           }
-        }else{ //if it's an Item
+        }else{ // if it's an Item
           if(r[r.length-1] == "<infoItem"){
 						var na;
 						var pro;
 						var range;
 						var i = 0;
-						//get the name value
+						// get the name value
 						while ((i<res.length)&&(na==undefined)) {
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("name")){
@@ -496,7 +499,7 @@ app.modules.target = (function(){
 
 						i=0;
 
-						//get the property value
+						// get the property value
 						while((i<res.length)&&(pro==undefined)){
 							if(res[i].includes("property")){
 								if(res[i] == ("property")){
@@ -541,7 +544,7 @@ app.modules.target = (function(){
 
 						i = 0;
 
-						//get the range value
+						// get the range value
 						while((range == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("range")){
@@ -586,7 +589,7 @@ app.modules.target = (function(){
 						}
 
 						var score;
-						//get the score
+						// get the score
 						while((score == undefined)&&(i<res.length)){
 							i = app.modules.target.space(i,res);
 							if(res[i].includes("score")){
@@ -659,7 +662,10 @@ app.modules.target = (function(){
 							}
 						}
             var newNode = {
-              text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ pro+"      "+range,
+// text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"
+//      "+ pro+"      "+range,
+		      text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ pro + "\t" + range +"</span>",
+
 							score: score,
 							name: na,
               type: "item",
@@ -687,12 +693,11 @@ app.modules.target = (function(){
     },
 
 		/*
-			Skip the space in a table of string
-
-			@param : i - id of the string
-			@param : res - array of string
-			@return : i
-		*/
+		 * Skip the space in a table of string
+		 * 
+		 * @param : i - id of the string @param : res - array of string @return :
+		 * i
+		 */
 		space : function(i,res){
 			while((res[i] == "")&&(i<res.length)){
 				i++;
@@ -701,10 +706,11 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Allow to import Json file for the data tree. Open a modal window to allow the user to select a file to import.
-
-			@param : evt - event
-		*/
+		 * Allow to import Json file for the data tree. Open a modal window to
+		 * allow the user to select a file to import.
+		 * 
+		 * @param : evt - event
+		 */
 		json : function(evt){
 			var files = evt.target.files; // FileList object
 
@@ -742,8 +748,8 @@ app.modules.target = (function(){
               data_tree.push(newNode);
 							app.modules.target.data(res,data_tree[0],prefixId);
 							app.modules.target.chooseStructure(data_tree);
-							//listData.push(data_tree);
-							//dataId = listData.length-1;
+							// listData.push(data_tree);
+							// dataId = listData.length-1;
 							var obj = {
 								name : theFile.name,
 							};
@@ -757,16 +763,17 @@ app.modules.target = (function(){
           })(f);
 
           // Read in the file
-          //reader.readAsDataText(f,UTF-8);
+          // reader.readAsDataText(f,UTF-8);
           reader.readAsText(f,"UTF-8");
         }
 		},
 
 		/*
-			Show a modal window where the user can select the part of the data tree to show
-
-			@param : tree - tree to display
-		*/
+		 * Show a modal window where the user can select the part of the data
+		 * tree to show
+		 * 
+		 * @param : tree - tree to display
+		 */
 		chooseStructure : function(tree){
 			var id = '#modal';
 			$(id).html('<h4>Please check the node of the structure</h4><div id="chooseTree"></div>');
@@ -793,10 +800,10 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Create the data tree with the check node
-
-			@param : node - the check node
-		*/
+		 * Create the data tree with the check node
+		 * 
+		 * @param : node - the check node
+		 */
 		add : function(node){
 			n = {
 				text : "Root",
@@ -820,10 +827,10 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Change the id attribute of all the node from a tree
-
-			@param : tab - tree
-		*/
+		 * Change the id attribute of all the node from a tree
+		 * 
+		 * @param : tab - tree
+		 */
 		changeId : function(tab,id,prefixId){
 			tab.forEach(function(e){
 				e.id = prefixId+id;
@@ -839,8 +846,8 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Hide the modal window
-		*/
+		 * Hide the modal window
+		 */
 		hideChoose : function(){
 		   // On cache le fond et la fenêtre modale
 		   $('#fond, .popup').hide();
@@ -848,11 +855,12 @@ app.modules.target = (function(){
 		},
 
 		/*
-			resize the modal window
-		*/
+		 * resize the modal window
+		 */
 		resizeChoose : function(){
 		   var modal = $('#modal');
-		   // On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+		   // On récupère la largeur de l'écran et la hauteur de la page afin
+			// de cacher la totalité de l'écran
 		   var winH = $(document).height();
 		   var winW = $(window).width();
 
@@ -867,10 +875,10 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Select the json file and display it
-
-			@param : file - the name of the json file selected
-		*/
+		 * Select the json file and display it
+		 * 
+		 * @param : file - the name of the json file selected
+		 */
 		select : function(file){
 			console.log(listData);
 			var i = 0;
@@ -896,11 +904,10 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Read a table of char (the json file) and create the data tree from it
-
-			@param : s - Array of char
-			@param : n - Root node
-		*/
+		 * Read a table of char (the json file) and create the data tree from it
+		 * 
+		 * @param : s - Array of char @param : n - Root node
+		 */
 		data : function(s,n,prefixId){
 			var node = [];
       node.push(n);
@@ -1104,12 +1111,11 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Search if a node is in a tree
-
-			@param : tree - the tree
-			@param : id - the id of the node to search
-			@return : find - if the node is contain
-		*/
+		 * Search if a node is in a tree
+		 * 
+		 * @param : tree - the tree @param : id - the id of the node to search
+		 * @return : find - if the node is contain
+		 */
 		contain : function(tree,id){
 			var find = false;
 			var i = 0;
@@ -1127,10 +1133,10 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Select the value and call method to create linksVal.
-
-			@param : id - id of the value who have been click
-		*/
+		 * Select the value and call method to create linksVal.
+		 * 
+		 * @param : id - id of the value who have been click
+		 */
 		link : function(id){
 			if(app.modules.target.contain(test_tree,id)){
 				if(test_selected == id){
@@ -1181,23 +1187,22 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Change the color of a value selector
-
-			@param : id - id of the value
-			@param : old - old class to remove
-			@param : n - new class to add
-		*/
+		 * Change the color of a value selector
+		 * 
+		 * @param : id - id of the value @param : old - old class to remove
+		 * @param : n - new class to add
+		 */
 		changeColor : function(id,old,n){
 			$("#"+id).removeClass( old ).addClass( n );
 			console.log($("#"+id));
 		},
 
 		/*
-			Create a link beetween two value
-
-			@param : obj - object that contains the id of the both value to connect
-			@param : color - the color of the connection
-		*/
+		 * Create a link beetween two value
+		 * 
+		 * @param : obj - object that contains the id of the both value to
+		 * connect @param : color - the color of the connection
+		 */
 		addLink : function(obj,color){
 			var add = true;
 			var res = app.modules.target.find(test_tree,obj.test);
@@ -1242,8 +1247,8 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Show a modal window to delete a link
-		*/
+		 * Show a modal window to delete a link
+		 */
 		showModal : function(){
 			var id = '#modal2';
 			$(id).html('<p id="xmlVersion" wrap="off">Delete this connection ?</p><button class="btn custom3 btn-default" id="delete">yes</button><button class="btn custom3 btn-default" id="cancel">cancel</button>');
@@ -1267,8 +1272,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Hide the modal window
-	 */
+		 * Hide the modal window
+		 */
 	 hideModal : function(){
 			// On cache le fond et la fenêtre modale
 			$('#fond2, .popup2').hide();
@@ -1276,11 +1281,12 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Resize the modal window
-	 */
+		 * Resize the modal window
+		 */
 	 resizeModal : function(){
 			var modal = $('#modal2');
-			// On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+			// On récupère la largeur de l'écran et la hauteur de la page afin
+			// de cacher la totalité de l'écran
 			var winH = $(document).height();
 			var winW = $(window).width();
 
@@ -1295,8 +1301,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Delete the link (the attribute conn)
-	 */
+		 * Delete the link (the attribute conn)
+		 */
 	 delete : function(){
 		 if(conn != undefined){
 			 var find = false;
@@ -1327,8 +1333,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Make sugestion connection in red beetween the both tree
-	 */
+		 * Make sugestion connection in red beetween the both tree
+		 */
 	 sugest : function(){
 		 if((test_tree == undefined) || (data_tree == undefined)){
 			 alert("Please import all the data require");
@@ -1352,12 +1358,11 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-		 find a node
-
-		 @param : t - tree
-		 @param : id - id of the node to find
-		 @return : res - the node
-	 */
+		 * find a node
+		 * 
+		 * @param : t - tree @param : id - id of the node to find @return : res -
+		 * the node
+		 */
 	 find : function(tree,id){
 		 var find = false;
 		 var i = 0;
@@ -1379,8 +1384,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Reload all the connection of the current data tree
-	 */
+		 * Reload all the connection of the current data tree
+		 */
 	 reload : function(){
 		 linksVal.forEach(function(e){
 			 if(app.modules.target.contain(data_tree,e.data)){
@@ -1421,10 +1426,10 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Get all the value of a tree
-
-		@return : val - Array of value
-	 */
+		 * Get all the value of a tree
+		 * 
+		 * @return : val - Array of value
+		 */
 	 getVal : function(t,parent){
 		 var val = [];
 		 t.forEach(function(e){
@@ -1444,8 +1449,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Delete all the connection of jsPlumb
-	 */
+		 * Delete all the connection of jsPlumb
+		 */
 	 deleteAllConn : function(){
 		jsPlumb.reset();
 		jsPlumb.bind('click', function (connection, e) {
@@ -1455,8 +1460,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-	 	Toggle the display of the list of json file
-	 */
+		 * Toggle the display of the list of json file
+		 */
 	 display : function(e){
 		 if(listDisplay){
 		 	$("#table2").hide();
@@ -1469,8 +1474,8 @@ app.modules.target = (function(){
 	 },
 
 	 /*
-		 Show a modal window to export the mappings
-	 */
+		 * Show a modal window to export the mappings
+		 */
 	 export : function(){
 		 if(linksVal.length == 0){
 			 alert('No connection detected');
@@ -1481,7 +1486,9 @@ app.modules.target = (function(){
 			 exportId = 0;
 			 links = linksVal.concat(linksId);
 			 app.modules.target.next();
-			 //$(id).html('<button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
+			 // $(id).html('<button class="btn custom3 btn-default"
+				// id="cancel">Cancel</button><button class="btn custom3
+				// btn-default" id="next">Next</button>');
 
 			 // On definit la taille de la fenetre modale
 			 app.modules.target.resizeExport();
@@ -1501,8 +1508,8 @@ app.modules.target = (function(){
 	},
 
 	/*
-	 Hide the modal window of the export
-	*/
+	 * Hide the modal window of the export
+	 */
 	hideExport : function(){
 		 // On cache le fond et la fenêtre modale
 		 $('#fond, .popup').hide();
@@ -1510,11 +1517,12 @@ app.modules.target = (function(){
 	},
 
 	/*
-	 Resize the modal window of the export
-	*/
+	 * Resize the modal window of the export
+	 */
 	resizeExport : function(){
 		 var modal = $('#modal');
-		 // On récupère la largeur de l'écran et la hauteur de la page afin de cacher la totalité de l'écran
+		 // On récupère la largeur de l'écran et la hauteur de la page afin
+			// de cacher la totalité de l'écran
 		 var winH = $(document).height();
 		 var winW = $(window).width();
 
@@ -1529,8 +1537,8 @@ app.modules.target = (function(){
 	},
 
 	/*
-		Display the next connection in the modal
-	*/
+	 * Display the next connection in the modal
+	 */
 	next : function(){
 		var b = true;
 		if(exportId != 0){
@@ -1745,8 +1753,8 @@ app.modules.target = (function(){
 	},
 
 	/*
-
-	*/
+	 * 
+	 */
 	download : function (){
 		var zip = new JSZip();
 		var jsonName;
@@ -1770,8 +1778,8 @@ app.modules.target = (function(){
 	},
 
 	/*
-		Go to the step 3 with the connection create in the step 2
-	*/
+	 * Go to the step 3 with the connection create in the step 2
+	 */
 	step3 : function (){
 		var zip = new JSZip();
 		var JsonFiles = [];
@@ -1802,8 +1810,8 @@ app.modules.target = (function(){
 		document.location.href = "step3.html";
 	},
 		/*
-			Use for test
-		*/
+		 * Use for test
+		 */
     test : function(){
 			var liste = $('#dataTree').treeview('getEnabled');
 			liste.forEach(function(e){
@@ -1812,8 +1820,9 @@ app.modules.target = (function(){
 		},
 
 		/*
-			Initialize all the events of the module and create the O-DF tree if there is one save in the sessionStorage
-		*/
+		 * Initialize all the events of the module and create the O-DF tree if
+		 * there is one save in the sessionStorage
+		 */
     init : function(){
       newId = sessionStorage.getItem('id');
       if(sessionStorage.getItem('tree') != undefined){
@@ -1858,7 +1867,7 @@ app.modules.target = (function(){
   }
 })();
 
-//launch all the init function of the app and get the list of prefix from LOV
+// launch all the init function of the app and get the list of prefix from LOV
 $(document).ready(function () {
 
 	var query = 'PREFIX vann:<http://purl.org/vocab/vann/>'
