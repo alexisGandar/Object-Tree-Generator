@@ -377,15 +377,23 @@ app.modules.term = (function(){
 
 
 				var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
-
-										+'SELECT DISTINCT ?property ?range'
-										+'{'
-	    							+' GRAPH <'+termUrl+'>'
-	  								+'{'
-	  								+'?property rdfs:domain <'+node.typeof+'>.'
-										+'?property rdfs:range ?range.'
-										+'}}';
-
+					+' PREFIX schema:  <http://schema.org/>'
+					+'SELECT DISTINCT ?property ?range'
+					+'{'
+					+' GRAPH <'+termUrl+'>'
+					+'{'
+					+'{'
+					+'?property rdfs:domain <'+node.typeof+'>.'
+					+'?property rdfs:range ?range.'
+					+'}'
+					+' UNION '
+					+'{'
+					+'?property schema:domainIncludes <'+node.typeof+'>.'
+					+'?property schema:rangeIncludes ?range.'
+					+'}'
+					+'}'
+					+'}';
+					
 				var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
 
 				var pr = $.ajax({
@@ -426,7 +434,7 @@ app.modules.term = (function(){
 									}
 								}
 								var n = {
-									text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
+									text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
 									type: "node",
 									score: score,
 									prop: e.property.value,
@@ -731,7 +739,7 @@ app.modules.term = (function(){
 						}
 					}
 					var node = {
-						text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
+						text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
 						type: "node",
 						score: score,
 						prop: e.property.value,
@@ -818,17 +826,36 @@ app.modules.table = (function(){
 				}
 			}
 
+//			var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+//									+'PREFIX '+prefix+':  <'+termUrl+'>'
+//
+//									+'SELECT DISTINCT ?property ?range'
+//									+'{'
+//    							+' GRAPH <'+termUrl+'>'
+//  								+'{'
+//  								+'?property rdfs:domain '+name+'.'
+//									+'?property rdfs:range ?range.'
+//									+'}}';
 			var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
-									+'PREFIX '+prefix+':  <'+termUrl+'>'
-
-									+'SELECT DISTINCT ?property ?range'
-									+'{'
-    							+' GRAPH <'+termUrl+'>'
-  								+'{'
-  								+'?property rdfs:domain '+name+'.'
-									+'?property rdfs:range ?range.'
-									+'}}';
-
+				+' PREFIX schema:  <http://schema.org/>' 
+				+' PREFIX '+prefix+':  <'+termUrl+'>'
+				+' SELECT DISTINCT ?property ?range'
+				+'{'
+				+' GRAPH <'+termUrl+'>'
+				+'{'
+				+'{'
+				+' ?property rdfs:domain '+name+'.'
+				+' ?property rdfs:range ?range.'
+				+'}'
+				+' UNION '
+				+'{'
+				+' ?property schema:domainIncludes '+name+'.'
+				+' ?property schema:rangeIncludes ?range.'
+				+'}'
+				+'}'
+				+'}';
+			console.log(query);
+				
 			var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
 
 			var pr = $.ajax({
