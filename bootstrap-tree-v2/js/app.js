@@ -376,6 +376,24 @@ app.modules.term = (function(){
 				}
 
 
+//				var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+//					+' PREFIX schema:  <http://schema.org/>'
+//					+'SELECT DISTINCT ?property ?range'
+//					+'{'
+//					+' GRAPH <'+termUrl+'>'
+//					+'{'
+//					+'{'
+//					+'?property rdfs:domain <'+node.typeof+'>.'
+//					+'?property rdfs:range ?range.'
+//					+'}'
+//					+' UNION '
+//					+'{'
+//					+'?property schema:domain <'+node.typeof+'>.'
+//					+'?property schema:rangeIncludes ?range.'
+//					+'}'
+//					+'}'
+//					+'}';
+				
 				var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
 					+' PREFIX schema:  <http://schema.org/>'
 					+'SELECT DISTINCT ?property ?range'
@@ -388,11 +406,17 @@ app.modules.term = (function(){
 					+'}'
 					+' UNION '
 					+'{'
-					+'?property schema:domain <'+node.typeof+'>.'
-					+'?property schema:rangeIncludes ?range.'
+//					+'?property schema:domain <'+node.typeof+'>.'
+					+'<'+node.typeof+'> rdfs:subClassOf* ?superClass '+'.'
+					+' ?property schema:domainIncludes ?superClass.'
+					+' ?property schema:rangeIncludes ?range.'
 					+'}'
 					+'}'
 					+'}';
+				
+//				+' '+name+' rdfs:subClassOf* ?superClass '+'.'
+//				+' ?property schema:domainIncludes ?superClass.'
+//				+' ?property schema:rangeIncludes ?range.'
 					
 				var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
 
@@ -404,8 +428,16 @@ app.modules.term = (function(){
 					success :
 						function(res){
 							res.results.bindings.forEach(function(e){
+//								var res = e.property.value.split("/");
+//								var tmp = res[res.length-1].split("#");
+//								if (res.length == 1) {
+//									tmp = res;
+//								}
 								var res = e.property.value.split("/");
 								var tmp = res[res.length-1].split("#");
+								if (res.length == 1) {
+									tmp = res;
+								}
 								var nameVal = tmp[tmp.length-1];
 								var prefixVal;
 								var done = false;
@@ -419,8 +451,12 @@ app.modules.term = (function(){
 									}
 								}
 								var res2 = e.range.value.split("/");
+//								alert(res2);
 								tmp = res2[res2.length-1].split("#");
-								var nameVal = tmp[tmp.length-1];
+								if (res2.length == 1) {
+									tmp = res2;
+								}
+//								var nameVal = tmp[tmp.length-1];
 								var nameRange = res2[res2.length-1];
 								var prefixRange;
 								done = false;
@@ -435,7 +471,7 @@ app.modules.term = (function(){
 								}
 								var n = {
 //									text: prefixVal +"/"+ nameVal + "      "+ prefixRange +"/"+ nameRange +"      "+ e.property.value + "      " + e.range.value,
-									text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
+									text: prefixVal +":"+ nameVal + "\t"+ prefixRange +":"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
 
 									type: "node",
 									score: score,
@@ -714,6 +750,9 @@ app.modules.term = (function(){
 				tab.forEach(function(e){
 					var res = e.property.value.split("/");
 					var tmp = res[res.length-1].split("#");
+					if (res.length == 1) {
+						tmp = res;
+					}
 					var nameVal = tmp[tmp.length-1];
 					var prefixVal;
 					var done = false;
@@ -728,6 +767,9 @@ app.modules.term = (function(){
 					}
 					var res2 = e.range.value.split("/");
 					tmp = res2[res2.length-1].split("#");
+					if (res2.length == 1) {
+						tmp = res2;
+					}
 					var nameRange = tmp[tmp.length-1];
 					var prefixRange;
 					done = false;
@@ -741,7 +783,7 @@ app.modules.term = (function(){
 						}
 					}
 					var node = {
-						text: prefixVal +"/"+ nameVal + "\t"+ prefixRange +"/"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
+						text: prefixVal +":"+ nameVal + "\t"+ prefixRange +":"+ nameRange +"<br><span style=\"font-size:smaller; margin-left:60px\">"+ e.property.value + "\t" + e.range.value+"</span>",
 						type: "node",
 						score: score,
 						prop: e.property.value,
@@ -838,6 +880,24 @@ app.modules.table = (function(){
 //  								+'?property rdfs:domain '+name+'.'
 //									+'?property rdfs:range ?range.'
 //									+'}}';
+//			var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
+//				+' PREFIX schema:  <http://schema.org/>' 
+//				+' PREFIX '+prefix+':  <'+termUrl+'>'
+//				+' SELECT DISTINCT ?property ?range'
+//				+'{'
+//				+' GRAPH <'+termUrl+'>'
+//				+'{'
+//				+'{'
+//				+' ?property rdfs:domain '+name+'.'
+//				+' ?property rdfs:range ?range.'
+//				+'}'
+//				+' UNION '
+//				+'{'
+//				+' ?property schema:domainIncludes '+name+'.'
+//				+' ?property schema:rangeIncludes ?range.'
+//				+'}'
+//				+'}'
+//				+'}';
 			var query = 'PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>'
 				+' PREFIX schema:  <http://schema.org/>' 
 				+' PREFIX '+prefix+':  <'+termUrl+'>'
@@ -851,11 +911,15 @@ app.modules.table = (function(){
 				+'}'
 				+' UNION '
 				+'{'
-				+' ?property schema:domainIncludes '+name+'.'
+
+				+' '+name+' rdfs:subClassOf* ?superClass '+'.'
+				+' ?property schema:domainIncludes ?superClass.'
+//				+' ?property schema:domainIncludes '+name+'.'
 				+' ?property schema:rangeIncludes ?range.'
 				+'}'
 				+'}'
-				+'}';
+				+'}';			
+
 			console.log(query);
 				
 			var uri = 'http://localhost:3030/LOV/query?query=' + encodeURIComponent(query);
