@@ -1541,20 +1541,20 @@ app.modules.step3 = (function(){
 	 */
 	 send : function(u){
 		 var data = app.modules.step3.buildXml("lite",listXml_tree,0,"");
-		 $.ajax({
-			 url : u,
-			 type: "POST",
-			 data: data,
-			 header: {
-        "Access-Control-Allow-Origin":"http://127.0.0.1"
-			},
-			 contentType: "text/xml",
-       dataType: "jsonp",
-			 success :
-				 function(res){
-					 console.log("youpi");
-				 }
-		 });
+
+		$.ajax({
+			url : u,
+			type: "POST",
+			header: {
+ 			"Access-Control-Allow-Origin":"http://127.0.0.1"
+ 		  },
+			contentType: "text/xml",
+			data: data,
+			success :
+				function(res){
+					console.log("youpi");
+				}
+		});
 	 },
 
 		/*
