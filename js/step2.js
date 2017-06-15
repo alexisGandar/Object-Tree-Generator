@@ -61,7 +61,6 @@ app.modules.target = (function(){
 		ODF : function(s){
 			xml = s;
 			newId = 0;
-			console.log(s);
 			var res = s.split(">");
 			test_tree = [];
 			var newNode = {
@@ -96,7 +95,6 @@ app.modules.target = (function(){
               // Print the contents of the file
 							xml = e.target.result;
               var res = e.target.result.split(">");
-							console.log(res);
 							linksId = [];
 							linksVal = [];
               test_tree = [];
@@ -113,7 +111,6 @@ app.modules.target = (function(){
               app.modules.target.generate(res,test_tree[0]);
 							sessionStorage.id = newId;
 							sessionStorage.tree = e.target.result;
-							console.log(test_tree);
               $('#tree').treeview({data: test_tree});
 							$('#tree').treeview('expandAll');
             };
@@ -810,10 +807,8 @@ app.modules.target = (function(){
 			var prefixId = "JS"+x;
 			app.modules.target.changeId(n.nodes,1,prefixId);
 			dataTree = [];
-			console.log(n);
 			dataTree.push(n);
 			listData.push([n]);
-			console.log(listData);
 			dataId = listData.length-1;
 			$('#dataTree').treeview({data: dataTree});
 			$('#dataTree').treeview('expandAll');
@@ -873,7 +868,6 @@ app.modules.target = (function(){
 			@param : file - the name of the json file selected
 		*/
 		select : function(file){
-			console.log(listData);
 			var i = 0;
 			var find = false;
 			while((i<listJson.length)&&(!find)){
@@ -1197,7 +1191,6 @@ app.modules.target = (function(){
 		*/
 		changeColor : function(id,old,n){
 			$("#"+id).removeClass( old ).addClass( n );
-			console.log($("#"+id));
 		},
 
 		/*
@@ -1209,7 +1202,6 @@ app.modules.target = (function(){
 		addLink : function(obj,color){
 			var add = true;
 			var res = app.modules.target.find(test_tree,obj.test);
-			console.log(res);
 			if(res.type == "value"){
 				linksVal.forEach(function(e){
 					if((e.data == obj.data)&&(e.test == obj.test)){
@@ -1232,9 +1224,6 @@ app.modules.target = (function(){
 			if(add){
 				$("#"+obj.test).parent().attr('id',"p"+obj.test);
 				$("#"+obj.data).parent().attr('id',"p"+obj.data);
-				console.log(obj);
-				console.log($("#"+obj.test).parent());
-				console.log($("#"+obj.data).parent());
 				jsPlumb.connect({
 							source: "p"+obj.test,
 							target: "p"+obj.data,
@@ -1245,8 +1234,6 @@ app.modules.target = (function(){
 						});
 				jsPlumb.repaintEverything();
 			}
-			console.log(linksVal);
-			console.log(linksId);
 		},
 
 		/*
@@ -1372,7 +1359,6 @@ app.modules.target = (function(){
 		 var res;
 		 while((!find)&&(i<tree.length)&&(res == undefined)){
 			 if(tree[i].id == id){
-				 console.log('find');
 				 find = true
 				 res = tree[i];
 			 }else{
@@ -1382,7 +1368,6 @@ app.modules.target = (function(){
 			 }
 			 i++;
 		 }
-		 console.log(res);
 		 return res;
 	 },
 
@@ -1394,7 +1379,6 @@ app.modules.target = (function(){
 			 if(app.modules.target.contain(data_tree,e.data)){
 				$("#"+e.test).parent().attr('id',"p"+e.test);
  				$("#"+e.data).parent().attr('id',"p"+e.data);
-				 console.log($("#"+e.data).parent());
 				jsPlumb.connect({
 							source: "p"+e.test,
 							target: "p"+e.data,
@@ -1410,7 +1394,6 @@ app.modules.target = (function(){
 			 if(app.modules.target.contain(data_tree,e.data)){
 				 $("#"+e.test).parent().attr('id',"p"+e.test);
 				 $("#"+e.data).parent().attr('id',"p"+e.data);
-				 console.log($("#"+e.data).parent());
 				 jsPlumb.connect({
 							 source: "p"+e.test,
 							 target: "p"+e.data,
@@ -1711,7 +1694,6 @@ app.modules.target = (function(){
 				var id = '#modal';
 				var operation = "<div class='operationBox'><button class='operation' id='bPlus'>+</button><button class='operation' id='bMoins'>-</button><button class='operation' id='bMult'>*</button><button class='operation' id='bDiv'>/</button><button class='operation' id='bConcat'>Concat</div>"
 				if(parentJson.length == 1){
-					console.log(parentJson[0]);
 					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div>'+operation+'<textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="function" wrap="off">'+parentJson[0].id+'</textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
 				}else{
 					$(id).html('<h5>'+ parentODF +'</h5><div class="idName"><p>'+string+'</p></div>'+operation+'<textarea placeholder="Please use the inputs id to create the function of the current O-DF item" id="function" wrap="off"></textarea><button class="btn custom3 btn-default" id="cancel">Cancel</button><button class="btn custom3 btn-default" id="next">Next</button>');
@@ -1739,8 +1721,6 @@ app.modules.target = (function(){
 				$('#cancel').click(app.modules.target.hideExport);
 				$('#next').click(app.modules.target.next);
 			}else{
-				console.log("fini");
-				console.log(exportJson);
 				var string = JSON.stringify(exportJson);
 				var id = '#modal';
 				$(id).html('<textarea id="function" readonly="readonly" wrap="off">'+string+'</textarea><button class="btn custom2 btn-default" id="cancel">Cancel</button><button class="btn custom2 btn-default" id="step3">Step 3<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></button><button class="btn custom2 btn-default" id="dl">Download<span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span></button>');
@@ -1805,7 +1785,6 @@ app.modules.target = (function(){
 			code: obj
 		}
 		sessionStorage.Mappings =  JSON.stringify(o);
-		console.log(zip);
 
 		document.location.href = "step3.html";
 	},
@@ -1813,10 +1792,6 @@ app.modules.target = (function(){
 			Use for test
 		*/
     test : function(){
-			var liste = $('#dataTree').treeview('getEnabled');
-			liste.forEach(function(e){
-				console.log(e);
-			});
 		},
 
 		/*
@@ -1888,7 +1863,6 @@ $(document).ready(function () {
 		success :
 			function(res){
 				listPref = res.results.bindings;
-				console.log(listPref);
 			}
 	});
 

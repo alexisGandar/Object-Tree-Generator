@@ -103,7 +103,6 @@ app.modules.tree = (function(){
 			var i = 0;
 			while((!done) && (i < t.length)){
 				var x = t[i];
-				console.log(x);
 				if(x.id == id){
 					if(x.nodes == undefined){
 						t[i].nodes = [];
@@ -163,7 +162,6 @@ app.modules.tree = (function(){
 			var i = 0;
 			while((!done) && (i < t.length)){
 				var x = t[i];
-				console.log(x);
 				if(x.id == id){
 					t.splice(i,1);
 					app.modules.tree.reload();
@@ -193,22 +191,17 @@ app.modules.tree = (function(){
 				var id = '#modal4';
 				$(id).html('<label>Name</label><input class="form-control" id="inputCustom"><button class="btn custom btn-default" id="confirm">Confirm</button><button class="btn custom btn-default" id="cancel">Cancel</button>');
 
-				// On definit la taille de la fenetre modale
 				app.modules.tree.resizeModal();
 
-				// Effet de transition
 				$('#fond4').fadeIn(1000);
 				$('#fond4').fadeTo("slow",0.8);
-				// Effet de transition
 				$(id).fadeIn(200);
 
 				$("#cancel").click(app.modules.tree.hideModal);
 				$("#confirm").click(app.modules.tree.addCustom);
 
 				$('.popup4 .close').click(function (e) {
-					 // On désactive le comportement du lien
 					 e.preventDefault();
-					 // On cache la fenetre modale
 					 app.modules.tree.hideModal();
 				 });
 			}
@@ -275,7 +268,6 @@ app.modules.tree = (function(){
 					}
 				}
 			}
-			console.log(res);
 			return res;
 		},
 
@@ -284,7 +276,6 @@ app.modules.tree = (function(){
 		*/
 		test : function(){
 			var liste = $('#tree').treeview('getSelected');
-			console.log(liste[0]);
 		},
 
 		/*
@@ -441,9 +432,7 @@ app.modules.term = (function(){
 
 							var check = $('#subTree').treeview('getChecked');
 							var expand = $('#subTree').treeview('getExpanded');
-							console.log(check);
 							app.modules.term.replace(newN,test_tree);
-							console.log(test_tree);
 							$('#subTree').treeview('remove');
 							$('#subTree').treeview({data: test_tree , showCheckbox: true, selectable: false});
 							$('#subTree').treeview('expandNode',node.nodeId);
@@ -509,7 +498,6 @@ app.modules.term = (function(){
 					});
 				}else{
 					var checked = $(tree).treeview('getChecked');
-					console.log(checked);
 					if(node.parentId != undefined){
 						var parent = $(tree).treeview('getNode', node.parentId);
 						var id = app.modules.term.getCloser(node,parent,tree);
@@ -601,7 +589,6 @@ app.modules.term = (function(){
 				alert("Please select a valid node");
 			}else{
 				if($('#subTree').treeview('getChecked').length != 0 ){
-					console.log(test_tree);
 					app.modules.term.recursiveAdd(test_tree);
 					liste_del.forEach(function(e){
 						app.modules.term.recursiveDel(test_tree,e);
@@ -757,7 +744,6 @@ app.modules.term = (function(){
 		*/
 		test : function(){
 			var liste = $('#subTree').treeview('getSelected');
-			console.log(liste);
 		},
 
 		/*
@@ -836,7 +822,6 @@ app.modules.table = (function(){
 				dataType: "json",
 				success :
 					function(res){
-						console.log(res.results.bindings);
 						app.modules.term.generate(res.results.bindings,term,score);
 					}
 			});
@@ -855,7 +840,6 @@ app.modules.table = (function(){
 				success :
 					function(res){
 						tab = res;
-						console.log(tab);
 						$('#table').bootstrapTable('destroy');
 						$('#table').bootstrapTable({
 								data: res.results
@@ -1151,7 +1135,6 @@ app.modules.edit = (function(){
 			 alert("Please select a valid node");
 		 }else{
 			 if($('#editTree').treeview('getChecked').length != 0 ){
-				 console.log(treeEdit);
 				 app.modules.edit.recursiveAdd(treeEdit);
 				 liste_del.forEach(function(e){
 					 app.modules.edit.recursiveDel(treeEdit,e);
@@ -1260,7 +1243,6 @@ $(document).ready(function () {
 		success :
 			function(res){
 				listPref = res.results.bindings;
-				console.log(listPref);
 			}
 	});
 });

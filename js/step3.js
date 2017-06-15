@@ -668,6 +668,7 @@ app.modules.step3 = (function(){
 			app.modules.step3.add(0);
 			app.modules.step3.resizeChoose();
 			var id = '#modal';
+			$(id).css("height","70%");
 
 			// Effet de transition
 			$('#fond').fadeIn(1000);
@@ -717,7 +718,6 @@ app.modules.step3 = (function(){
 			@param : idTree - id of the current tree
 		*/
 		add : function(idTree){
-			console.log(idTree);
 			if(idTree != jsonList.length){
 				var newNode = {
 					text: "Root",
@@ -1135,7 +1135,6 @@ app.modules.step3 = (function(){
 				var i = 0;
 				while((i<list.length)&&(!idUnfill)){
 					if(list[i].text == "Object_Id"){
-						console.log("unfill");
 						idUnfill = true;
 					}else{
 						i++;
@@ -1205,7 +1204,6 @@ app.modules.step3 = (function(){
 			 $('#send').click(function(){
 				 $(id).html('<label>Please specify the URL of the send request</label><input class="form-control" id="inputCustom"><button class="btn custom btn-default" id="confirm">Confirm</button><button class="btn custom btn-default" id="cancel">cancel</button>');
 				 $("#confirm").click(function(){
-					 console.log($("#inputCustom").val());
 					 if(($("#inputCustom").val()).includes(":8080")){
 						 app.modules.step3.send($("#inputCustom").val());
 					 }else{
@@ -1409,7 +1407,6 @@ app.modules.step3 = (function(){
 		 }else{
 			 res = app.modules.step3.buildXml("heavy",listXml_tree,0,"");
 		 }
-		 console.log(res);
 		 var textFileAsBlob = new Blob([res], {type:'text/xml'});
 		 var fileNameToSaveAs = "OMI-ODF";
 
@@ -1552,7 +1549,6 @@ app.modules.step3 = (function(){
 			data: data,
 			success :
 				function(res){
-					console.log("youpi");
 				}
 		});
 	 },
@@ -1562,7 +1558,6 @@ app.modules.step3 = (function(){
 		*/
 		test : function(){
 			var liste = $('#tree').treeview('getSelected');
-			console.log(liste[0]);
 		},
 
     /*
